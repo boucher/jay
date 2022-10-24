@@ -36,7 +36,7 @@ class Define {
   constructor(name, body, isMethod) {
     this.name = name
     this.body = body
-    this.isMethod = method
+    this.isMethod = isMethod
   }
 }
 

@@ -1,0 +1,40 @@
+program     → expression* EOF ;
+expression  → sequence*;
+sequence    → bind (“,” bind)*
+
+bind        → assignment ("::" define | defineGroup)*
+defineGroup → "(" define ("," define)* ")"
+
+assignment  → IDENTIFIER ("<-" | "<--") assignment | 
+              cascade
+
+cascade     → keyword (";" messageSend)*
+messageSend → IDENTIFIER | OPERATOR unary | KEYWORD operator
+
+keyword     → operator (KEYWORD operator)*
+operator    → unary (OPERATOR unary)*
+unary       → primary IDENTIFIER*
+
+primary     → NUMBER | STRING | IDENTIFIER | 
+              "return" assignment? | 
+              "(" expression ")" |
+              "[" object "]" |
+              "#[" sequence "]" |
+              "{" block "}" |
+              KEYWORD operator
+
+object      → ("|" assignment "|")? (define ("," define)?)?
+block       → ("|" IDENTIFIER* "|")? expression
+
+define      → IDENTIFIER "<-" assignment | 
+              IDENTIFIER methodDef | 
+              OPERATOR IDENTIFIER? methodDef |
+              KEYWORD IDENTIFIER? (KEYWORD IDENTIFIER?)* methodDef
+
+
+methodDef   → "{" expression "}"
+
+
+KEYWORD     → IDENTIFIER? ":"
+IDENTIFIER  → [_a-zA-Z][_a-zA-Z0-9]*
+OPERATOR    → ! | + | - | * | / | &&? | \|\|? | % | ~ | 

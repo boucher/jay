@@ -23,6 +23,7 @@ Token.Dot          = "dot"
 Token.Pipe         = "pipe"
 Token.Arrow        = "arrow"
 Token.LongArrow    = "long arrow"
+Token.Hash         = "hash"
 Token.Bind         = "bind"
 Token.Self         = "self"
 Token.Undefined    = "undefined"
@@ -74,7 +75,7 @@ String.prototype.alpha = function() {
 }
 
 String.prototype.operator = function() {
-  return "-+=/<>?~!,#$%^&*".includes(this)
+  return "-+=/<>?~!,$%^&*".includes(this)
 }
 
 String.prototype.identifier = function() {
@@ -197,6 +198,7 @@ class Lexer {
         case ";": return this.singleToken(Token.Semicolon)
         case ".": return this.singleToken(Token.Dot)
         case "|": return this.singleToken(Token.Pipe)
+        case "#": return this.singleToken(Token.Hash)
 
         case "\"":
           return this.readString()

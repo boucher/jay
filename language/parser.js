@@ -11,7 +11,11 @@ class Parser {
 
   reportError(error) {
     debugger
-    this.errors.push(new Error(error))
+    this.errors.push(error)
+  }
+
+  throwError(error) {
+    throw new Error(error)
   }
 
   ifLookAhead(type1, type2) {
@@ -55,7 +59,7 @@ class Parser {
     let token = this.read.shift();
   
     if (type && !type == token.type) {
-      this.reportError(error || `Expect token: ${type} Got: ${this.current()}`)
+      this.throwError(error || `Expect token: ${type} Got: ${this.current()}`)
       return false
     }
   
@@ -79,15 +83,20 @@ class Parser {
   }
 
   expression() {
-    return this.sequence()
+    try {
+      return this.sequence()
+    } catch(e) {
+      this.reportError(e)
+      return new Expr.Error(e)
+    }
   }
 
   sequence() {
     let exprs = this.parseSequence()
 
-    if (exprs.length == 1) {
+    /*if (exprs.length == 1) {
       return exprs[0]
-    } 
+    }*/
 
     return new Expr.Sequence(exprs)
   }
@@ -99,7 +108,7 @@ class Parser {
       let defines
       if (this.ifLookAhead(Token.LeftParen)) {
         this.consume(Token.LeftParen)
-        defines = this.parseDefines()
+        defines = this.parseDefines(Token.RightParen)
       } else {
         defines = [this.parseDefine()]
       }
@@ -127,7 +136,33 @@ class Parser {
   }
 
   cascade() {
-    return this.keyword()
+    let expr = this.keyword()
+
+    if (expr instanceof Expr.Message) {
+      let messages = [expr]
+      let args = []
+
+      this.whileMatchDo(Token.Semicolon, () => {
+        let token
+        if (token = this.match(Token.Name)) {
+          messages.push(new Expr.Message(expr.receiver, token.text, args))
+        } else if (token = this.match(Token.Operator)) {
+          args.push(this.unary())
+          messages.push(new Expr.Message(expr.receiver, token.text, args))
+        } else if (this.ifLookAhead(Token.Keyword)) {
+          let name = ""
+          this.whileMatchDo(Token.Keyword, keyword => {
+            name += keyword.text
+            args.push(this.operator())
+          })
+          messages.push(new Expr.Message(expr.receiver, name, args))
+        }
+      })
+
+      expr = new Expr.Sequence(messages)
+    }
+
+    return expr
   }
 
   keyword() {
@@ -219,7 +254,7 @@ class Parser {
 
       let defines = []
       if (!this.match(Token.RightBracket)) {
-        defines = this.parseDefines()
+        defines = this.parseDefines(Token.RightBracket)
       }
 
       return new Expr.Object(parent, defines)
@@ -263,7 +298,7 @@ class Parser {
       return new Expr.Message(null, message, args)
     }
 
-    this.reportError(`Could not parse: ${this.current()}`)
+    this.throwError(`Could not parse: ${this.current()}`)
     this.consume()
 
     return new Expr.Error()
@@ -284,16 +319,16 @@ class Parser {
     return exprs
   }
 
-  parseDefines() {
+  parseDefines(closingToken) {
     let defines = []
     let define
 
     while (define = this.parseDefine()) {
       defines.push(define)
 
-      if (this.match(Token.RightParen)) return defines
+      if (this.match(closingToken)) return defines
       this.consume(Token.Comma)
-      if (this.match(Token.RightParen)) return defines
+      if (this.match(closingToken)) return defines
     }
 
     return new Expr.Error()
@@ -315,12 +350,14 @@ class Parser {
       return new Define(name.text, body, true)
     }
 
+    // Define an operator method on an object
     if (operator = this.match(Token.Operator)) {
       let param = this.consume(Token.Name)?.text
       let body = this.parseDefineMethod([param])
       return new Define(operator.text, body, true)
     }
 
+    // Parse named method
     if (this.ifLookAhead(Token.Keyword)) {
       let name = ""
       let params = []
@@ -334,14 +371,20 @@ class Parser {
       return new Define(name, body, true)
     }
 
-    this.reportError(`Unexpected token '${this.current()}' after bind.`)
+    this.throwError(`Unexpected token '${this.current()}' after bind.`)
   }
 
   parseDefineMethod(params) {
     this.consume(Token.LeftBrace, "Expect block body for method.")
-    let body = this.expression()
+    
+    let body
+    if (!this.ifLookAhead(Token.RightBrace)) {
+      body = this.expression()
+    }
+
     this.consume(Token.RightBrace, "Expect '}' after method body.")
-    return new Expr.Block(params, body)
+
+    return new Expr.Block(params, body || new Expr.Name("nil"))
   }
 
 }
