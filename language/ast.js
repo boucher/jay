@@ -12,7 +12,7 @@ const Expressions = {
   String: ["value"],
   Var: ["name", "value"],
   Return: ["result"],
-  Error: [],
+  Error: ["error"],
 }
 
 class Expr {}

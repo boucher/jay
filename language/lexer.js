@@ -45,9 +45,14 @@ class SourceSpan {
     this.start = start
     this.end = end
   }
+  location() {
+    let {line, column } = this.file.indexToPosition(this.start)
+    let path = this.file.path
+    return { path, line, column };
+  }
   toString() {
-    let position = this.file.indexToPosition(this.start)
-    return `${this.file.path}: ${position.line}, ${position.column}`
+    let { path, line, column } = this.location()
+    return `${path}: ${line}, ${column}`
   }
 }
 
@@ -293,7 +298,7 @@ class Lexer {
   readOperator() {
     let type = Token.Operator
 
-    while (!this.eof() && this.current().identifier()) {
+    while (!this.eof() && this.current().operator() || this.current().alpha()) {
       if (this.current().alpha()) {
         type = Token.Name
       }

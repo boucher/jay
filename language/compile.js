@@ -1,18 +1,19 @@
 import Expr, { Define } from "./ast.js"
 
 class Compiler {
-  constructor(buffer=[], indent="") {
-    this._buffer = buffer
-    this._indent = indent
+  constructor(inline=false) {
+    this._buffer = []
+    this._indent = ""
+    this.inline = inline
     this.topLevel = true
   }
 
-  static compile(expression) {
-    let compiler =new Compiler()
+  static compile(expression, inline=false) {
+    let compiler =new Compiler(inline)
     //compiler.writeLine("(function($Object, $Arrays, $Ether, $Blocks, $Fibers, $Numbers, $Strings, True, False, Nil){")
-    compiler.writeLine("(function(){")
+    !inline && compiler.writeLine("(function(){")
     expression.compileTo(compiler)
-    compiler.writeLine("\n})()")
+    !inline && compiler.writeLine("\n})()")
     //compiler.writeLine("\n})({}, {}, {}, {}, {}, {}, {}, {}, {}, {})")
     //console.debug(compiler.toString())
     return compiler.toString()
@@ -42,7 +43,6 @@ class Compiler {
     this._indent = this._indent.substring(2)
   }
 }
-
 
 Expr.prototype.compileTo = function(compiler) {
   throw new Error("<not implemented>")
@@ -125,7 +125,7 @@ Expr.Block.prototype.compileTo = function(compiler) {
 }
 
 Expr.Error.prototype.compileTo = function(compiler) {
-  throw new Error("Cannot compile, encounted error: " + this)
+  throw new Error("Cannot compile, encounted error: " + this.error)
 }
 
 Define.prototype.compileTo = function(compiler) {
@@ -151,7 +151,7 @@ Expr.Message.prototype.compileTo = function(compiler) {
     this.receiver.compileTo(compiler)
     compiler.write(")")
   } else {
-    compiler.write("Ether")
+    compiler.write("$Ether")
   }
 
   compiler.write(`["${this.name}"](`)
@@ -202,9 +202,9 @@ Expr.Sequence.prototype.compileTo = function(compiler) {
   compiler.topLevel = false
 
   this.exprs.forEach((e, i) => {
-    if (i !== 0) compiler.writeLine("")
+    if (i !== 0) compiler.writeLine(";")
     
-    let doReturn = topLevel && i == this.exprs.length - 1
+    let doReturn = !compiler.inline && topLevel && i == this.exprs.length - 1
     if (doReturn && !(e instanceof Expr.Var)) {
       compiler.write("return ")
     }
@@ -230,7 +230,8 @@ Expr.String.prototype.compileTo = function(compiler) {
 
 Expr.Var.prototype.compileTo = function(compiler) {
   if (this.name.charAt(0) != "_") {
-    compiler.write("let ")
+    // TODO: should this be let?
+    compiler.write("var ")
   }
   compiler.write(`${convertName(this.name)} = `)
 

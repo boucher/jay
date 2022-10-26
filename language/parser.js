@@ -1,6 +1,14 @@
 import Expr, { Define } from "./ast.js"
 import { Token } from './lexer.js'
 
+class ParseError extends Error {
+  constructor(message, token) {
+    super(message)
+    this.token = token
+    this.location = token.span.location()
+  }
+}
+
 class Parser {
 
   constructor(tokenGenerator) {
@@ -10,19 +18,15 @@ class Parser {
   }
 
   reportError(error) {
-    debugger
     this.errors.push(error)
   }
 
-  throwError(error) {
-    throw new Error(error)
+  throwError(error, token) {
+    throw new ParseError(error, token)
   }
 
   ifLookAhead(type1, type2) {
     this.fillLookahead(arguments.length);
-    if (this.read.length == 0) {
-      debugger
-    }
     return this.read[0].type == type1 && (!type2 || this.read[1].type == type2)
   }
   
@@ -59,7 +63,7 @@ class Parser {
     let token = this.read.shift();
   
     if (type && !type == token.type) {
-      this.throwError(error || `Expect token: ${type} Got: ${this.current()}`)
+      this.throwError(error || `Expect token: ${type} Got: ${token}`, token)
       return false
     }
   
@@ -69,9 +73,6 @@ class Parser {
   fillLookahead(count) {
     while (this.read.length < count) {
       let token = this.tokens.next()
-      if (token.value?.type == Token.Eof) {
-        debugger
-      }
       this.read.push(token.value);
     }
   }
@@ -298,10 +299,7 @@ class Parser {
       return new Expr.Message(null, message, args)
     }
 
-    this.throwError(`Could not parse: ${this.current()}`)
-    this.consume()
-
-    return new Expr.Error()
+    this.throwError(`Could not parse: ${this.current()}`, this.current())
   }
 
   parseSequence() {
@@ -330,8 +328,6 @@ class Parser {
       this.consume(Token.Comma)
       if (this.match(closingToken)) return defines
     }
-
-    return new Expr.Error()
   }
 
   parseDefine() {
@@ -371,7 +367,7 @@ class Parser {
       return new Define(name, body, true)
     }
 
-    this.throwError(`Unexpected token '${this.current()}' after bind.`)
+    this.throwError(`Unexpected token '${this.current()}' after bind.`, this.current())
   }
 
   parseDefineMethod(params) {
