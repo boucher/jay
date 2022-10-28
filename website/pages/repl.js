@@ -1,10 +1,10 @@
-"use client";
+//"use client";
 import { useEffect, useState, useRef, useCallback } from 'react'
-import styles from './page.module.css'
+import styles from '../styles/Repl.module.css'
 
 
 export default function REPL() {
-  const workerRef = useRef<Worker>()
+  const workerRef = useRef()
 
   let [result, setResult] = useState({})
   let [log, setLog] = useState([])
@@ -12,9 +12,9 @@ export default function REPL() {
 
   useEffect(() => {
     if (!workerRef.current) {
-      workerRef.current = new Worker(new URL('../../repl.ts', import.meta.url))
+      workerRef.current = new Worker(new URL('../components/repl.js', import.meta.url))
     }
-    const onMessage = (event: MessageEvent) => {
+    const onMessage = (event) => {
       switch(event.data.type) {
         case "log": 
           log += event.data.log

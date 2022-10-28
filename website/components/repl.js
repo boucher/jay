@@ -1,11 +1,11 @@
-import "../language/runtime.js";
+import Parser from "../../language/parser.js"
+import { Lexer } from '../../language/lexer.js'
+import Compiler from '../../language/compile.js'
 
-const coreCode = compile(require("../language/core/core.fin"), false);
+import "../../language/runtime.js";
+
+const coreCode = compile(require("../../language/core/core.fin"), false);
 eval?.(coreCode)
-
-import Parser from "../language/parser.js"
-import { Lexer } from '../language/lexer.js'
-import Compiler from '../language/compile.js'
 
 const nativeLog = console.log
 console.log = function(m) {
@@ -13,7 +13,7 @@ console.log = function(m) {
   postMessage({ type: "log", log: m })
 }
 
-function run(source:string) {
+function run(source) {
   let code, result
 
   try {
@@ -34,7 +34,7 @@ function run(source:string) {
   }
 }
 
-function compile(source:string, inline=true) {
+function compile(source, inline=true) {
   let lexer = new Lexer("repl", source);
   let parser = new Parser(lexer.each());
 
@@ -51,6 +51,6 @@ function compile(source:string, inline=true) {
   return Compiler.compile(expressions, inline);
 }
 
-addEventListener('message', (event: MessageEvent<string>) => {
+addEventListener('message', (event) => {
   postMessage(run(event.data))
 })
