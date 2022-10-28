@@ -1,0 +1,46 @@
+.replInput {
+  width: 100%;
+  min-height: 20rem;
+  border-radius: 5px;
+  background-color: #fafafa;
+  padding: 1rem;
+  line-height: 1.7;
+}
+
+.replResult {
+  margin: 1rem 0;
+  padding: 0.1rem 1rem;
+  background: #e4f3fd;
+  border-radius: 5px;
+  font-family: Menlo, Monaco, Lucida Console, Liberation Mono, DejaVu Sans Mono,
+    Bitstream Vera Sans Mono, Courier New, monospace;
+}
+
+.log {
+  border-bottom: 1px solid #c7e5fa;
+  padding-bottom: 1rem;
+}
+
+.replCode {
+
+}
+
+.replError {
+  margin: 1rem 0;
+  padding: 0.1rem 1rem;
+  background: rgb(255, 216, 216);
+  border-radius: 5px;
+  font-family: Menlo, Monaco, Lucida Console, Liberation Mono, DejaVu Sans Mono,
+    Bitstream Vera Sans Mono, Courier New, monospace;
+
+}
+
+.submit button {
+  padding: 0.5rem;
+  margin-right: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.submit span {
+  color: #999;
+}

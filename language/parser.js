@@ -5,7 +5,7 @@ class ParseError extends Error {
   constructor(message, token) {
     super(message)
     this.token = token
-    this.location = token.span.location()
+    this.location = token && token.span.location()
   }
 }
 
@@ -27,7 +27,7 @@ class Parser {
 
   ifLookAhead(type1, type2) {
     this.fillLookahead(arguments.length);
-    return this.read[0].type == type1 && (!type2 || this.read[1].type == type2)
+    return this.read[0]?.type == type1 && (!type2 || this.read[1]?.type == type2)
   }
   
   
@@ -62,7 +62,7 @@ class Parser {
     this.fillLookahead(1);
     let token = this.read.shift();
   
-    if (type && !type == token.type) {
+    if (type && type != token?.type) {
       this.throwError(error || `Expect token: ${type} Got: ${token}`, token)
       return false
     }

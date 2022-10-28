@@ -85,7 +85,7 @@ Expr.Bind.prototype.compileTo = function(compiler) {
 }
 
 Expr.Block.prototype.compileTo = function(compiler) {
-  compiler.write("function(")
+  compiler.write("(function(")
 
   this.params.forEach((p, i) =>  {
     if (i != 0) compiler.write(", ")
@@ -121,7 +121,7 @@ Expr.Block.prototype.compileTo = function(compiler) {
 
   compiler.dedent()
   compiler.writeLine("")
-  compiler.write("}")
+  compiler.write("})")
 }
 
 Expr.Error.prototype.compileTo = function(compiler) {

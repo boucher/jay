@@ -57,6 +57,14 @@
   })
 
   Object.assign($Ether, {
+    // TODO: this also writes a newline in reality
+    "write:": function(text) {
+      console.log(text["to-string"]())
+    },
+
+    "writeLine:": function() {
+      console.log(text["to-string"]()+"\n")
+    },
 
   })
 
@@ -178,15 +186,6 @@
 
     ">=": function(s) {
       return this >= s
-    },
-
-    // TODO: this also writes a newline in reality
-    "write:": function(text) {
-      console.log(text["to-string"]())
-    },
-
-    "writeLine:": function() {
-      console.log(text["to-string"]()+"\n")
     },
   })
 

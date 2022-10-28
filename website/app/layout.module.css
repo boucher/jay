@@ -1,0 +1,68 @@
+.container {
+  padding: 0 2rem;
+  margin: auto;
+  max-width: 75ch;
+  min-width: 40ch;
+}
+
+a.activePath { 
+  color: red;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding: 1rem 0 2rem 0;
+  border-bottom: 1px solid #eee;
+}
+
+.nav {
+}
+
+.nav ul {
+  display: flex;
+  list-style-type: none;
+  margin: 0; padding: 0;
+}
+
+.nav ul li {
+  padding: 0;
+  margin: 0.25rem;
+}
+
+.nav ul li a {
+  display: inline-block;
+  padding: 0.5rem;
+}
+
+.main {
+  margin-bottom: 2rem;
+}
+
+.footer {
+  text-align: center;
+  padding: 2rem 0;
+  border-top: 1px solid #eee;
+}
+
+.title {
+  margin: 0;
+  line-height: 1.15;
+  font-size: 4rem;
+  font-style: normal;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+}
+
+@media (prefers-color-scheme: dark) {
+  .title {
+
+  }
+  .code {
+    background: #111;
+  }
+  .logo img {
+    filter: invert(1);
+  }
+}
