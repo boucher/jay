@@ -1,10 +1,11 @@
-import "../../../language/runtime.js";
-const coreCode = compile(require("../../../language/core/core.fin"), false);
+import "../language/runtime.js";
+
+const coreCode = compile(require("../language/core/core.fin"), false);
 eval?.(coreCode)
 
-import Parser from "../../../language/parser.js"
-import { Lexer } from '../../../language/lexer.js'
-import Compiler from '../../../language/compile.js'
+import Parser from "../language/parser.js"
+import { Lexer } from '../language/lexer.js'
+import Compiler from '../language/compile.js'
 
 const nativeLog = console.log
 console.log = function(m) {

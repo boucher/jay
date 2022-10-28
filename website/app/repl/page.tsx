@@ -12,7 +12,7 @@ export default function REPL() {
 
   useEffect(() => {
     if (!workerRef.current) {
-      workerRef.current = new Worker(new URL('./repl.ts', import.meta.url))
+      workerRef.current = new Worker(new URL('../../repl.ts', import.meta.url))
     }
     const onMessage = (event: MessageEvent) => {
       switch(event.data.type) {
