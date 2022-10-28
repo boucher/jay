@@ -7,6 +7,9 @@ const nextConfig = {
     config.module.rules.push({ test: /\.fin$/, type: 'asset/source' })
     return config
   },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
 }
 
 module.exports = nextConfig
