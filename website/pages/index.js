@@ -7,7 +7,7 @@ export default function Home() {
     </p>
 
     <p>
-      This project is a hobby that does not currently aim to serve any particular purpose other than exploration. If you have thoughts on the language, I'd love to hear them. At the moment, it is almost exactly a re-implementation of Finch in JS. I hope to change the syntax slightly to be slightly more familiar for someone with a background in JS.
+      This project is a hobby that does not currently aim to serve any particular purpose other than exploration. If you have thoughts on the language, I would love to hear them. At the moment, it is almost exactly a re-implementation of Finch in JS. I hope to change the syntax slightly to be slightly more familiar for someone with a background in JS.
     </p>
 
     <p>
@@ -24,7 +24,7 @@ export default function Home() {
     <h2>A Taste of the Language</h2>
 
     <p>
-      Here's a little example to get you going. This little program doesn't draw, but it will tell you what turns to make to draw a dragon curve:
+      Here&apos;s a little example to get you going. This little program doesn&apos;t draw, but it will tell you what turns to make to draw a dragon curve:
     </p>
 
     <pre><code className="block">
