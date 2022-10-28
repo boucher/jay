@@ -9,14 +9,15 @@ import Compiler from '../../../language/compile.js'
 const nativeLog = console.log
 console.log = function(m) {
   nativeLog(m)
-  postMessage({ type: "log", log: m + "\n" })
+  postMessage({ type: "log", log: m })
 }
 
 function run(source:string) {
-  try {
+  let code, result
 
-    let code = compile(source)
-    let result = eval?.(code)
+  try {
+    code = compile(source)
+    result = eval?.(code)
 
     return {
       type: "end",
@@ -26,6 +27,7 @@ function run(source:string) {
   } catch (e) {
     return {
       type: "end",
+      code: code,
       error: e
     }
   }

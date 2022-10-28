@@ -2,13 +2,13 @@
 
   const BRIDGE = true
 
-  globalThis.True = {}
-  globalThis.False = {}
-  globalThis.Nil = null
-
   globalThis.$Object = {}
   globalThis.$Ether = Object.create($Object)
   //globalThis.$Fibers = Object.create($Object)
+
+  globalThis.True = Object.create($Object)
+  globalThis.False = Object.create($Object)
+  globalThis.Nil = null
 
   if (BRIDGE) {
     globalThis.$Numbers = Number.prototype
@@ -27,6 +27,10 @@
     return typeof v.value === "undefined" ? v : v.value 
   }
    
+  const BOOL = function(b) {
+    return b ? True : False
+  }
+
   // if we want to box values we can wrap them here...
   // NOTHING is using this right now...
   let BOX = function(klass, x) {
@@ -36,7 +40,7 @@
 
   Object.assign($Object, {
     "===": function(other) {
-      return this === other ? True : False
+      return BOOL(this === other)
     },
 
     "to-string": function() {
@@ -62,7 +66,7 @@
       console.log(text["to-string"]())
     },
 
-    "writeLine:": function() {
+    "write-line:": function(text) {
       console.log(text["to-string"]()+"\n")
     },
 
@@ -102,22 +106,22 @@
       return VALUE(x) / VALUE(this)
     },
     "=number:": function(x) {
-      return VALUE(this) == VALUE(x)
+      return BOOL(VALUE(this) == VALUE(x))
     },
     "!=number:": function(x) {
-      return VALUE(this) != VALUE(x)
+      return BOOL(VALUE(this) != VALUE(x))
     },
     "<number:": function(x) {
-      return VALUE(x) < VALUE(this)
+      return BOOL(VALUE(x) < VALUE(this))
     },
     ">number:": function(x) {
-      return VALUE(x) > VALUE(this)
+      return BOOL(VALUE(x) > VALUE(this))
     },
     "<=number:": function(x) {
-      return VALUE(x) <= VALUE(this)
+      return BOOL(VALUE(x) <= VALUE(this))
     },
     ">=number:": function(x) {
-      return VALUE(x) >= VALUE(this)
+      return BOOL(VALUE(x) >= VALUE(this))
     },
   }
 
@@ -169,23 +173,23 @@
     },
 
     "=string:": function(s) {
-      return s == this
+      return BOOL(s == this)
     },
 
     "<": function(s) {
-      return this < s
+      return BOOL(this < s)
     },
 
     ">": function(s) {
-      return this > s
+      return BOOL(this > s)
     },
 
     "<=": function(s) {
-      return this == s
+      return BOOL(this == s)
     },
 
     ">=": function(s) {
-      return this >= s
+      return BOOL(this >= s)
     },
   })
 

@@ -2,36 +2,32 @@
 import { useEffect, useState, useRef, useCallback } from 'react'
 import styles from './page.module.css'
 
+
 export default function REPL() {
   const workerRef = useRef<Worker>()
 
-  const [result, setResult] = useState({})
-  const [log, setLog] = useState("")
-  const [input, setInput] = useState("")
+  let [result, setResult] = useState({})
+  let [log, setLog] = useState([])
+  let [input, setInput] = useState("")
 
   useEffect(() => {
-
+    if (!workerRef.current) {
+      workerRef.current = new Worker(new URL('./repl.ts', import.meta.url))
+    }
     const onMessage = (event: MessageEvent) => {
       switch(event.data.type) {
         case "log": 
-          console.log('here')
-          setLog(log + event.data.log)
+          log += event.data.log
+          setLog(log)
           break
         case "end":
-          console.log('end')
           setResult(event.data)
-          reset()
+          workerRef.current = undefined
           break
       }
     }
-  
-    const reset = () => {
-      workerRef.current = new Worker(new URL('./repl.ts', import.meta.url))
-      workerRef.current.onmessage = onMessage  
-    }
-
-    reset()
-  }, [])
+    workerRef.current.onmessage = onMessage  
+  }, [log, setLog, result, setResult, workerRef])
 
   const handleWork = useCallback(async () => {
     setLog("")
@@ -49,7 +45,7 @@ export default function REPL() {
   const handleText = useCallback( e => {
     console.log(e.target.value)
     setInput(e.target.value)
-  }, [input])
+  }, [])
 
   return (<>
     <p>

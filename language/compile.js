@@ -84,15 +84,23 @@ Expr.Bind.prototype.compileTo = function(compiler) {
   compiler.write("})")
 }
 
-Expr.Block.prototype.compileTo = function(compiler) {
-  compiler.write("(function(")
+Expr.Block.prototype.compileTo = function(compiler, captureThis=true) {
+  if (captureThis) {
+    compiler.write("((")
+  } else {
+    compiler.write("(function(")
+  }
 
   this.params.forEach((p, i) =>  {
     if (i != 0) compiler.write(", ")
     compiler.write(convertName(p))
   })
 
-  compiler.write(") {")
+  if (captureThis) {
+    compiler.write(") => {")
+  } else {
+    compiler.write(") {")
+  }
 
   compiler.indent()
   compiler.writeLine("")
@@ -140,7 +148,9 @@ Define.prototype.compileTo = function(compiler) {
   } else {
     compiler.write(`"${this.name}": `)
   }
-  this.body.compileTo(compiler)
+  
+  this.body.compileTo(compiler, false)
+
   compiler.writeLine(",")
 }
 
@@ -225,7 +235,8 @@ Expr.Set.prototype.compileTo = function(compiler) {
 }
 
 Expr.String.prototype.compileTo = function(compiler) {
-  compiler.write(JSON.stringify(this.value))
+  // FIXME: why are empty strings being captured this way?
+  compiler.write(this.value == '""' ? this.value : JSON.stringify(this.value))
 }
 
 Expr.Var.prototype.compileTo = function(compiler) {
