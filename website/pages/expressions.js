@@ -247,8 +247,6 @@ file close`}</code></pre>
       Because control structures are implemented as blocks and messages, it can be frustrating if you want to bail early. For this, there is a <code>return</code> expression, which will take whatever argument is passed on the right and return it from the enclosing method.
     </p>
 
-    <p className="todo">Not yet implemented</p>
-
     <pre><code>{
 `obj <- [
   early?: return-early {
