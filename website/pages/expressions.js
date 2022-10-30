@@ -313,6 +313,10 @@ write: a`}
       One way you can think of this is that short assignment always means "declare a new variable in the current scope" and long assignment means "assign to an existing one."
     </p>
 
+    <p className="todo">
+      Currently, this only works if you do not create a local variable with the same name as the outer variable you are trying to access. If you short-assign and long-assign to the same name, the local variable will shadow the outer variable, and you won't be able to access it.
+    </p>
+
     <h2>Arrays</h2>
 
     <p>
