@@ -25,19 +25,25 @@ class Compiler {
     this._indent = ""
     this.buffer = []
     this.inline = inline
-    this.topLevel = true
     this.parent = null
     this.id = compilerID++
   }
 
   static compile(expression, inline=false) {
     let compiler =new Compiler(inline)
-    //compiler.writeLine("(function($Object, $Arrays, $Ether, $Blocks, $Fibers, $Numbers, $Strings, True, False, Nil){")
-    !inline && compiler.writeLine("(function(){")
-    expression.compileTo(compiler)
-    !inline && compiler.writeLine("\n})()")
-    //compiler.writeLine("\n})({}, {}, {}, {}, {}, {}, {}, {}, {}, {})")
-    //console.debug(compiler.toString())
+
+    if (!inline) {
+      compiler.write("(function(){")
+      compiler.indent()
+      compiler.writeLine()
+      wrapReturn(expression, compiler)
+      compiler.dedent()
+      compiler.writeLine("")
+      compiler.writeLine("})()")
+    } else {
+      expression.compileTo(compiler)
+    }
+
     return compiler.toString()
   }
 
@@ -107,7 +113,16 @@ Expr.Bind.prototype.compileTo = function(compiler) {
 }
 
 function wrapReturn(expr, compiler) {
-  if (expr instanceof Expr.Var) {
+  if (expr instanceof Expr.Sequence) {
+    let length = expr.exprs.length
+    let existing = expr.exprs[length - 1]
+    expr.exprs[length - 1] = {
+      compileTo: (compiler) => {
+        wrapReturn(existing, compiler)
+      }
+    }
+    expr.compileTo(compiler)
+  } else if (expr instanceof Expr.Var) {
     // if it's a var expression, we return the name of the var we assigned
     expr.compileTo(compiler)
     compiler.writeLine("")
@@ -147,21 +162,8 @@ Expr.Block.prototype.compileTo = function(compiler, methodDefinition=false) {
     compiler.writeLine("")  
   }
 
-  if (this.body instanceof Expr.Sequence) {
-    let length = this.body.exprs.length
-    let existing = this.body.exprs[length - 1]
-    this.body.exprs[length - 1] = {
-      compileTo: (compiler) => {
-        wrapReturn(existing, compiler)
-      }
-    }
-
-    this.body.compileTo(compiler)
-  } else {
-    wrapReturn(this.body, compiler)
-  }
+  wrapReturn(this.body, compiler)
   
-
   if (methodDefinition) {
     compiler.dedent()
     compiler.writeLine("")
@@ -199,7 +201,6 @@ Define.prototype.compileTo = function(compiler) {
   } else {
     let methodCompiler = new Compiler()
     methodCompiler.parent = this
-    methodCompiler.topLevel = false
     methodCompiler._indent = compiler._indent
   
     compiler.write(`"${this.name}": `)
@@ -264,18 +265,9 @@ Expr.Self.prototype.compileTo = function(compiler) {
 }
 
 Expr.Sequence.prototype.compileTo = function(compiler) {
-  let topLevel = compiler.topLevel
-  compiler.topLevel = false
-
   this.exprs.forEach((e, i) => {
     if (i !== 0) compiler.writeLine(";")
-    
-    let doReturn = !compiler.inline && topLevel && i == this.exprs.length - 1
-    if (doReturn) {
-      wrapReturn(e, compiler)
-    } else {
-      e.compileTo(compiler)
-    }
+    e.compileTo(compiler)
   })
 }
 

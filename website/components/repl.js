@@ -34,7 +34,7 @@ function run(source) {
   }
 }
 
-function compile(source, inline=true) {
+function compile(source, inline=false) {
   let lexer = new Lexer("repl", source);
   let parser = new Parser(lexer.each());
 
