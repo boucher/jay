@@ -251,13 +251,17 @@ file close`}</code></pre>
 
     <pre><code>{
 `obj <- [
-  method { |return-early|
+  early?: return-early {
     if: return-early then: {
       return "Early!"
     }
     // do something else
+    return "Late!"
   }
-]`}</code></pre>
+]
+
+write: (obj early?: true) // prints Early!
+write: (obj early?: false) // prints Late!`}</code></pre>
 
     <h2>Assignment</h2>
 

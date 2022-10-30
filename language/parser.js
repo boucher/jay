@@ -95,9 +95,9 @@ class Parser {
   sequence() {
     let exprs = this.parseSequence()
 
-    /*if (exprs.length == 1) {
+    if (exprs.length == 1) {
       return exprs[0]
-    }*/
+    }
 
     return new Expr.Sequence(exprs)
   }
@@ -160,7 +160,11 @@ class Parser {
         }
       })
 
-      expr = new Expr.Sequence(messages)
+      if (messages.length == 1) {
+        expr = messages[0]
+      } else {
+        expr = new Expr.Sequence(messages)
+      }        
     }
 
     return expr
@@ -222,7 +226,6 @@ class Parser {
       return new Expr.Self()
     }
 
-    // TODO(bob): Move this below sequence in the grammar so that you
     if (this.match(Token.Return)) {
       let result
       if (this.ifLookAhead(Token.Line) || 

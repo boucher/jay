@@ -22,6 +22,7 @@ export default function REPL() {
           break
         case "end":
           setResult(event.data)
+          workerRef.current.terminate()
           workerRef.current = undefined
           break
       }

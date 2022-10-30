@@ -23,13 +23,13 @@ function run(source) {
     return {
       type: "end",
       code: code,
-      result: result?.toString() || "null",
+      result: result && result['to-string']() || "null",
     }
   } catch (e) {
     return {
       type: "end",
       code: code,
-      error: e
+      error: e.toString()
     }
   }
 }

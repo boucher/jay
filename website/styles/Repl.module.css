@@ -44,3 +44,17 @@
 .submit span {
   color: #999;
 }
+
+
+@media (prefers-color-scheme: dark) {
+  .replInput {
+    background: #111;
+  }
+  .replResult {
+    background: rgb(0, 43, 161);
+  }
+  .replError {
+    background: rgb(132, 0, 0);
+  }
+}
+

@@ -2,6 +2,14 @@
 
   const BRIDGE = true
 
+  globalThis.ReturnExpr = function(result, id) {
+    this.result = result
+    this.id = id
+    //this.toString = () => "RuntimeException: cannot call return from outside of a method"
+  }
+
+  globalThis.ReturnExpr.prototype = new Error
+
   globalThis.$Object = {}
   globalThis.$Ether = Object.create($Object)
   //globalThis.$Fibers = Object.create($Object)

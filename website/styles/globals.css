@@ -68,10 +68,13 @@ p code {
   h1 {
     color: rgb(109, 154, 203);
   }
-  h2 {
+  h2, h3, h4 {
     color: rgb(150, 178, 216);
   }
   code {
     background: #111;
+  }
+  .todo {
+    background-color: rgb(125, 66, 14);
   }
 }

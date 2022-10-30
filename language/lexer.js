@@ -80,7 +80,7 @@ String.prototype.alpha = function() {
 }
 
 String.prototype.operator = function() {
-  return "-+=/<>?~!,%^&*".includes(this)
+  return "-+=/<>?~!%^&*".includes(this)
 }
 
 String.prototype.identifier = function() {
