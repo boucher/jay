@@ -16,7 +16,8 @@
 
   globalThis.True = Object.create($Object)
   globalThis.False = Object.create($Object)
-  globalThis.Nil = null
+  globalThis.Nil = Object.create($Object)
+  Nil.toString = function(){ "nil" }
 
   if (BRIDGE) {
     globalThis.$Numbers = Number.prototype
