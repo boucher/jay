@@ -1,7 +1,7 @@
 import Expr, { Define } from "./ast.js"
 
 
-const convertName = function(name) {
+function convertName(name) {
   if (name == "nil") return "Nil"
   if (name == "true") return "True"
   if (name == "false") return "False"
@@ -19,18 +19,35 @@ const convertName = function(name) {
   return outputName
 }
 
+function enclosingMethodCompiler(compiler) {
+  let c = compiler
+  while (c != null && !c.method) {
+    c = c.parent
+  }
+  return c
+}
+ 
 let compilerID = 1;
 class Compiler {
-  constructor(inline=false) {
+  constructor() {
     this._indent = ""
     this.buffer = []
-    this.inline = inline
-    this.parent = null
+    this.methodVars = []
     this.id = compilerID++
+    this.parent = null
+    this.method = false
+  }
+
+  childCompiler(method) {
+    let c = new Compiler()
+    c._indent = this._indent
+    c.parent = this
+    c.method = method
+    return c
   }
 
   static compile(expression, inline=false) {
-    let compiler =new Compiler(inline)
+    let compiler =new Compiler()
 
     if (!inline) {
       compiler.write("(function(){")
@@ -160,15 +177,33 @@ Expr.Block.prototype.compileTo = function(compiler, methodDefinition=false) {
     compiler.write("try {")
     compiler.indent()
     compiler.writeLine("")  
+
+  }
+  
+  let blockCompiler = compiler.childCompiler(methodDefinition)
+  
+  wrapReturn(this.body, blockCompiler)
+  
+  // write out the top level var declarations
+  if (blockCompiler.methodVars.length > 0) {
+    compiler.write("var ")
+    blockCompiler.methodVars.forEach((v, i) => {
+      if (i != 0) compiler.write(", ")
+      compiler.write(convertName(v))
+    })
+    compiler.writeLine(";")
   }
 
-  wrapReturn(this.body, compiler)
+  // add in the compiled block body
+  if (blockCompiler.buffer.length) {
+    compiler.buffer = compiler.buffer.concat(blockCompiler.buffer)
+  }
   
-  if (methodDefinition) {
+  if (methodDefinition) {      
     compiler.dedent()
     compiler.writeLine("")
     compiler.writeLine("} catch(e) {")
-    compiler.writeLine(`  if (e instanceof ReturnExpr && e.id == ${compiler.id}) { return e.result } else { throw e }`)
+    compiler.writeLine(`  if (e instanceof ReturnExpr && e.id == ${blockCompiler.id}) { return e.result } else { throw e }`)
     compiler.writeLine("}")
   }
 
@@ -180,7 +215,7 @@ Expr.Block.prototype.compileTo = function(compiler, methodDefinition=false) {
 Expr.Return.prototype.compileTo = function(compiler) {
   compiler.write("(()=>{throw new ReturnExpr(")
   this.result.compileTo(compiler)
-  compiler.write(`, ${compiler.id}`)
+  compiler.write(`, ${enclosingMethodCompiler(compiler).id}`)
   compiler.write(")})()")
 }
 
@@ -196,16 +231,11 @@ Define.prototype.compileTo = function(compiler) {
       compiler.writeLine("")
     }
     
-    compiler.write(`"_${convertName(this.name)}": `)
+    compiler.write(`"${convertName(this.name.substring(1))}": `)
     this.body.compileTo(compiler, false)
   } else {
-    let methodCompiler = new Compiler()
-    methodCompiler.parent = this
-    methodCompiler._indent = compiler._indent
-  
     compiler.write(`"${this.name}": `)
-    this.body.compileTo(methodCompiler, true)
-    compiler.buffer = compiler.buffer.concat(methodCompiler.buffer)
+    this.body.compileTo(compiler, true)
   }
   
   compiler.writeLine(",")
@@ -284,9 +314,9 @@ Expr.String.prototype.compileTo = function(compiler) {
 
 Expr.Var.prototype.compileTo = function(compiler) {
   if (this.name.charAt(0) != "_") {
-    // TODO: should this be let?
-    compiler.write("var ")
+      compiler.methodVars.push(this.name)
   }
+
   compiler.write(`${convertName(this.name)} = `)
 
   this.value.compileTo(compiler)
