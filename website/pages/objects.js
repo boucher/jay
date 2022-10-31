@@ -61,7 +61,7 @@ Much like unary, operator and keyword messages, object literals let you define u
 
   // keyword
   greet: who and: who-else {
-    write-line: "Hi, " + who " and " + who-else
+    write-line: "Hi, " + who + " and " + who-else
   }
 ]`}
 </code></pre>
