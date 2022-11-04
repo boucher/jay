@@ -204,7 +204,7 @@ Expr.Block.prototype.compileTo = function(compiler, methodDefinition=false) {
     compiler.writeLine("")
     compiler.writeLine("} catch(e) {")
     compiler.writeLine(`  if (e instanceof ReturnExpr && e.id == ${blockCompiler.id}) { return e.result } else { throw e }`)
-    compiler.writeLine("}")
+    compiler.write("}")
   }
 
   compiler.dedent()
@@ -285,8 +285,8 @@ Expr.Object.prototype.compileTo = function(compiler) {
   })
 
   compiler.dedent()
-
   compiler.writeLine("")
+
   compiler.write("})")
 }
 
