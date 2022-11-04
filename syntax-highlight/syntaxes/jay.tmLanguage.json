@@ -1,0 +1,787 @@
+{
+	"fileTypes": ["jay"],
+	"name": "jay",
+	"patterns": [
+	{
+		"include": "#main"
+	}],
+	"scopeName": "source.jay",
+	"uuid": "",
+	"repository":
+	{
+		"main":
+		{
+			"patterns": [
+			{
+				"include": "#comments"
+			},
+			{
+				"begin": "(\\{)",
+				"beginCaptures":
+				{
+					"1":
+					{
+						"name": "punctuation.definition.block.jay"
+					}
+				},
+				"patterns": [
+				{
+					"include": "#main__1"
+				}],
+				"end": "(\\})",
+				"endCaptures":
+				{
+					"1":
+					{
+						"name": "punctuation.definition.block.jay"
+					}
+				}
+			},
+			{
+				"begin": "(\\#\\[)",
+				"beginCaptures":
+				{
+					"1":
+					{
+						"name": "punctuation.definition.array.jay"
+					}
+				},
+				"patterns": [
+				{
+					"include": "#main__3"
+				}],
+				"end": "(\\])",
+				"endCaptures":
+				{
+					"1":
+					{
+						"name": "punctuation.definition.array.jay"
+					}
+				}
+			},
+			{
+				"match": "([_a-zA-Z][_a-zA-Z0-9\\+\\*\\-\\^\\?\\|\\/\\x{003d}\\x{0026}\\x{0021}\\x{003c}\\x{003e}\\x{0025}\\x{007e}]*\\W*)(<--)",
+				"captures":
+				{
+					"1":
+					{
+						"name": "variable.jay"
+					},
+					"2":
+					{
+						"name": "keyword.operator.assignment.long.jay"
+					}
+				}
+			},
+			{
+				"match": "([_a-zA-Z][_a-zA-Z0-9\\+\\*\\-\\^\\?\\|\\/\\x{003d}\\x{0026}\\x{0021}\\x{003c}\\x{003e}\\x{0025}\\x{007e}]*\\W*)(<-)",
+				"captures":
+				{
+					"1":
+					{
+						"name": "variable.jay"
+					},
+					"2":
+					{
+						"name": "keyword.operator.assignment.short.jay"
+					}
+				}
+			},
+			{
+				"begin": "(::\\W*)(\\()",
+				"beginCaptures":
+				{
+					"1":
+					{
+						"name": "punctuation.definition.binding.jay"
+					},
+					"2":
+					{
+						"name": "punctuation.definition.binding.group.jay"
+					}
+				},
+				"patterns": [
+				{
+					"include": "#main__4"
+				}],
+				"end": "(\\))",
+				"endCaptures":
+				{
+					"1":
+					{
+						"name": "punctuation.definition.binding.group.jay"
+					}
+				}
+			},
+			{
+				"begin": "(\\[)",
+				"beginCaptures":
+				{
+					"1":
+					{
+						"name": "punctuation.definition.entity.jay"
+					}
+				},
+				"patterns": [
+				{
+					"include": "#main__5"
+				}],
+				"end": "(\\])",
+				"endCaptures":
+				{
+					"1":
+					{
+						"name": "punctuation.definition.entity.jay"
+					}
+				}
+			},
+			{
+				"begin": "(\\()",
+				"beginCaptures":
+				{
+					"1":
+					{
+						"name": "punctuation.definition.group.jay"
+					}
+				},
+				"patterns": [
+				{
+					"include": "#main__6"
+				}],
+				"end": "(\\))",
+				"endCaptures":
+				{
+					"1":
+					{
+						"name": "punctuation.definition.group.jay"
+					}
+				}
+			},
+			{
+				"include": "#singleFieldDefine"
+			},
+			{
+				"include": "#singleUnaryDefine"
+			},
+			{
+				"include": "#singleBinaryDefine"
+			},
+			{
+				"include": "#singleKeywordDefine"
+			},
+			{
+				"include": "#messages"
+			},
+			{
+				"match": "(\\;)",
+				"name": "keyword.operator.cascade.jay"
+			},
+			{
+				"match": "(\\,)",
+				"name": "punctuation.separator.comma.jay"
+			},
+			{
+				"include": "#builtins"
+			},
+			{
+				"include": "#strings"
+			},
+			{
+				"include": "#boolean"
+			},
+			{
+				"include": "#identifier"
+			},
+			{
+				"include": "#numeric"
+			},
+			{
+				"include": "#operator"
+			},
+			{
+				"match": "([^\\s])",
+				"name": "invalid.jay"
+			}]
+		},
+		"binaryDefine":
+		{
+			"patterns": [
+			{
+				"begin": "([\\+\\*\\-\\^\\?\\|\\/\\x{003d}\\x{0026}\\x{0021}\\x{003c}\\x{003e}\\x{0025}\\x{007e}]+\\W*)([_a-zA-Z][_a-zA-Z0-9\\+\\*\\-\\^\\?\\|\\/\\x{003d}\\x{0026}\\x{0021}\\x{003c}\\x{003e}\\x{0025}\\x{007e}]*\\W*)(\\{)",
+				"beginCaptures":
+				{
+					"1":
+					{
+						"name": "entity.name.function.method.jay"
+					},
+					"2":
+					{
+						"name": "variable.parameter.jay"
+					},
+					"3":
+					{
+						"name": "punctuation.definition.block.jay"
+					}
+				},
+				"patterns": [
+				{
+					"include": "#binaryDefine__1"
+				}],
+				"end": "(\\})",
+				"endCaptures":
+				{
+					"1":
+					{
+						"name": "punctuation.definition.block.jay"
+					}
+				}
+			}]
+		},
+		"binaryDefine__1":
+		{
+			"patterns": [
+			{
+				"include": "#main"
+			}]
+		},
+		"boolean":
+		{
+			"patterns": [
+			{
+				"match": "(?:\\b(true|false)\\s)",
+				"name": "constant.language.bool.jay"
+			}]
+		},
+		"builtins":
+		{
+			"patterns": [
+			{
+				"match": "(?:\\b(self)\\s)",
+				"name": "variable.language.self.jay"
+			},
+			{
+				"match": "(?:\\b(Object|Ether|Arrays|Blocks|Fibers|Numbers|Strings|Switches)\\s)",
+				"name": "support.class.jay"
+			},
+			{
+				"match": "(?:\\b(nil)\\s)",
+				"name": "constant.language.nil.jay"
+			}]
+		},
+		"comments":
+		{
+			"patterns": [
+			{
+				"match": "(//.*)",
+				"name": "comment.line.jay"
+			},
+			{
+				"begin": "(/\\*)",
+				"beginCaptures":
+				{
+					"1":
+					{
+						"name": "comment.block.jay"
+					}
+				},
+				"contentName": "comment.block.jay",
+				"end": "(\\*/)",
+				"endCaptures":
+				{
+					"1":
+					{
+						"name": "comment.block.jay"
+					}
+				}
+			}]
+		},
+		"comments__1":
+		{
+			"patterns": []
+		},
+		"defines":
+		{
+			"patterns": [
+			{
+				"include": "#comments"
+			},
+			{
+				"include": "#fieldDefine"
+			},
+			{
+				"include": "#keywordDefine"
+			},
+			{
+				"include": "#binaryDefine"
+			},
+			{
+				"include": "#unaryDefine"
+			}]
+		},
+		"fieldDefine":
+		{
+			"patterns": [
+			{
+				"begin": "([_a-zA-Z][_a-zA-Z0-9\\+\\*\\-\\^\\?\\|\\/\\x{003d}\\x{0026}\\x{0021}\\x{003c}\\x{003e}\\x{0025}\\x{007e}]*\\W*)(<-)",
+				"beginCaptures":
+				{
+					"1":
+					{
+						"name": "entity.other.attribute-name.jay"
+					},
+					"2":
+					{
+						"name": "keyword.operator.assignment.short.jay"
+					}
+				},
+				"patterns": [
+				{
+					"include": "#fieldDefine__1"
+				}],
+				"end": "(^(?=.{0,1})(?:|))",
+				"endCaptures":
+				{
+					"1":
+					{
+						"name": "comment.line.jay"
+					}
+				}
+			}]
+		},
+		"fieldDefine__1":
+		{
+			"patterns": [
+			{
+				"include": "#main"
+			}]
+		},
+		"identifier":
+		{
+			"patterns": [
+			{
+				"match": "([_a-zA-Z][_a-zA-Z0-9\\+\\*\\-\\^\\?\\|\\/\\x{003d}\\x{0026}\\x{0021}\\x{003c}\\x{003e}\\x{0025}\\x{007e}]*)",
+				"name": "text.jay"
+			}]
+		},
+		"keywordDefine":
+		{
+			"patterns": [
+			{
+				"begin": "([_\\-a-zA-Z0-9\\+\\*\\-\\^\\?\\|\\/\\x{003d}\\x{0026}\\x{0021}\\x{003c}\\x{003e}\\x{0025}\\x{007e}]*:\\W*)([_a-zA-Z][_a-zA-Z0-9\\+\\*\\-\\^\\?\\|\\/\\x{003d}\\x{0026}\\x{0021}\\x{003c}\\x{003e}\\x{0025}\\x{007e}]*)",
+				"beginCaptures":
+				{
+					"1":
+					{
+						"name": "entity.name.function.method.jay"
+					},
+					"2":
+					{
+						"name": "variable.parameter.jay"
+					}
+				},
+				"patterns": [
+				{
+					"include": "#keywordDefine__1"
+				}],
+				"end": "(?=\\{)",
+				"endCaptures":
+				{
+					"1":
+					{
+						"name": "punctuation.definition.block.jay"
+					}
+				}
+			},
+			{
+				"begin": "(\\{)",
+				"beginCaptures":
+				{
+					"1":
+					{
+						"name": "punctuation.definition.block.jay"
+					}
+				},
+				"patterns": [
+				{
+					"include": "#keywordDefine__2"
+				}],
+				"end": "(\\})",
+				"endCaptures":
+				{
+					"1":
+					{
+						"name": "punctuation.definition.block.jay"
+					}
+				}
+			}]
+		},
+		"keywordDefine__1":
+		{
+			"patterns": [
+			{
+				"include": "#keywordDefine"
+			}]
+		},
+		"keywordDefine__2":
+		{
+			"patterns": [
+			{
+				"include": "#main"
+			}]
+		},
+		"main__1":
+		{
+			"patterns": [
+			{
+				"begin": "(\\|)",
+				"beginCaptures":
+				{
+					"1":
+					{
+						"name": "punctuation.definition.parameters.jay"
+					}
+				},
+				"contentName": "variable.parameter.jay",
+				"end": "(\\|)",
+				"endCaptures":
+				{
+					"1":
+					{
+						"name": "punctuation.definition.parameters.jay"
+					}
+				}
+			},
+			{
+				"include": "#main"
+			}]
+		},
+		"main__2":
+		{
+			"patterns": []
+		},
+		"main__3":
+		{
+			"patterns": [
+			{
+				"include": "#main"
+			}]
+		},
+		"main__4":
+		{
+			"patterns": [
+			{
+				"include": "#defines"
+			}]
+		},
+		"main__5":
+		{
+			"patterns": [
+			{
+				"include": "#defines"
+			}]
+		},
+		"main__6":
+		{
+			"patterns": [
+			{
+				"include": "#main"
+			}]
+		},
+		"messages":
+		{
+			"patterns": [
+			{
+				"match": "([_\\-a-zA-Z0-9\\+\\*\\-\\^\\?\\|\\/\\x{003d}\\x{0026}\\x{0021}\\x{003c}\\x{003e}\\x{0025}\\x{007e}]+:)",
+				"name": "entity.name.function.message.jay"
+			}]
+		},
+		"numeric":
+		{
+			"patterns": [
+			{
+				"match": "(-?\\b\\d+)",
+				"name": "constant.numeric.jay"
+			}]
+		},
+		"operator":
+		{
+			"patterns": [
+			{
+				"match": "([\\+\\*\\-\\^\\?\\|\\/\\x{003d}\\x{0026}\\x{0021}\\x{003c}\\x{003e}\\x{0025}\\x{007e}]+)",
+				"name": "keyword.operator.jay"
+			}]
+		},
+		"singleBinaryDefine":
+		{
+			"patterns": [
+			{
+				"begin": "(::\\W*)([\\+\\*\\-\\^\\?\\|\\/\\x{003d}\\x{0026}\\x{0021}\\x{003c}\\x{003e}\\x{0025}\\x{007e}]+\\W*)([_a-zA-Z][_a-zA-Z0-9\\+\\*\\-\\^\\?\\|\\/\\x{003d}\\x{0026}\\x{0021}\\x{003c}\\x{003e}\\x{0025}\\x{007e}]*\\W*)(\\{)",
+				"beginCaptures":
+				{
+					"1":
+					{
+						"name": "punctuation.definition.binding.jay"
+					},
+					"2":
+					{
+						"name": "entity.name.function.method.jay"
+					},
+					"3":
+					{
+						"name": "variable.parameter.jay"
+					},
+					"4":
+					{
+						"name": "punctuation.definition.block.jay"
+					}
+				},
+				"patterns": [
+				{
+					"include": "#singleBinaryDefine__1"
+				}],
+				"end": "(\\})",
+				"endCaptures":
+				{
+					"1":
+					{
+						"name": "punctuation.definition.block.jay"
+					}
+				}
+			}]
+		},
+		"singleBinaryDefine__1":
+		{
+			"patterns": [
+			{
+				"include": "#main"
+			}]
+		},
+		"singleFieldDefine":
+		{
+			"patterns": [
+			{
+				"begin": "(::\\W*)([_a-zA-Z][_a-zA-Z0-9\\+\\*\\-\\^\\?\\|\\/\\x{003d}\\x{0026}\\x{0021}\\x{003c}\\x{003e}\\x{0025}\\x{007e}]*\\W*)(<-)",
+				"beginCaptures":
+				{
+					"1":
+					{
+						"name": "punctuation.definition.binding.jay"
+					},
+					"2":
+					{
+						"name": "entity.other.attribute-name.jay"
+					},
+					"3":
+					{
+						"name": "keyword.operator.assignment.short.jay"
+					}
+				},
+				"patterns": [
+				{
+					"include": "#singleFieldDefine__1"
+				}],
+				"end": "(^(?=.{0,1})(?:|))",
+				"endCaptures":
+				{
+					"1":
+					{
+						"name": "comment.line.jay"
+					}
+				}
+			}]
+		},
+		"singleFieldDefine__1":
+		{
+			"patterns": [
+			{
+				"include": "#main"
+			}]
+		},
+		"singleKeywordDefine":
+		{
+			"patterns": [
+			{
+				"begin": "(::\\W*)([_\\-a-zA-Z0-9\\+\\*\\-\\^\\?\\|\\/\\x{003d}\\x{0026}\\x{0021}\\x{003c}\\x{003e}\\x{0025}\\x{007e}]*:\\W*)([_a-zA-Z][_a-zA-Z0-9\\+\\*\\-\\^\\?\\|\\/\\x{003d}\\x{0026}\\x{0021}\\x{003c}\\x{003e}\\x{0025}\\x{007e}]*)",
+				"beginCaptures":
+				{
+					"1":
+					{
+						"name": "punctuation.definition.binding.jay"
+					},
+					"2":
+					{
+						"name": "entity.name.function.method.jay"
+					},
+					"3":
+					{
+						"name": "variable.parameter.jay"
+					}
+				},
+				"patterns": [
+				{
+					"include": "#singleKeywordDefine__1"
+				}],
+				"end": "(?=\\{)",
+				"endCaptures":
+				{
+					"1":
+					{
+						"name": "punctuation.definition.block.jay"
+					}
+				}
+			},
+			{
+				"begin": "(\\{)",
+				"beginCaptures":
+				{
+					"1":
+					{
+						"name": "punctuation.definition.block.jay"
+					}
+				},
+				"patterns": [
+				{
+					"include": "#singleKeywordDefine__2"
+				}],
+				"end": "(\\})",
+				"endCaptures":
+				{
+					"1":
+					{
+						"name": "punctuation.definition.block.jay"
+					}
+				}
+			}]
+		},
+		"singleKeywordDefine__1":
+		{
+			"patterns": [
+			{
+				"include": "#keywordDefine"
+			}]
+		},
+		"singleKeywordDefine__2":
+		{
+			"patterns": [
+			{
+				"include": "#main"
+			}]
+		},
+		"singleUnaryDefine":
+		{
+			"patterns": [
+			{
+				"begin": "(::\\W*)([_a-zA-Z][_a-zA-Z0-9\\+\\*\\-\\^\\?\\|\\/\\x{003d}\\x{0026}\\x{0021}\\x{003c}\\x{003e}\\x{0025}\\x{007e}]*\\W*)(\\{)",
+				"beginCaptures":
+				{
+					"1":
+					{
+						"name": "punctuation.definition.binding.jay"
+					},
+					"2":
+					{
+						"name": "entity.name.function.method.jay"
+					},
+					"3":
+					{
+						"name": "punctuation.definition.block.jay"
+					}
+				},
+				"patterns": [
+				{
+					"include": "#singleUnaryDefine__1"
+				}],
+				"end": "(\\})",
+				"endCaptures":
+				{
+					"1":
+					{
+						"name": "punctuation.definition.block.jay"
+					}
+				}
+			}]
+		},
+		"singleUnaryDefine__1":
+		{
+			"patterns": [
+			{
+				"include": "#main"
+			}]
+		},
+		"strings":
+		{
+			"patterns": [
+			{
+				"begin": "(\\\")",
+				"beginCaptures":
+				{
+					"1":
+					{
+						"name": "string.quoted.double.jay"
+					}
+				},
+				"patterns": [
+				{
+					"include": "#strings__1"
+				}],
+				"end": "(\\\")",
+				"endCaptures":
+				{
+					"1":
+					{
+						"name": "string.quoted.double.jay"
+					}
+				}
+			}]
+		},
+		"strings__1":
+		{
+			"patterns": [
+			{
+				"match": "((?:\\\\u[0-9a-f]{4})|(?:\\\\[\\x{0022}\\x{005c}\\x{002f}bfnrt]))",
+				"name": "constant.character.escape.jay"
+			},
+			{
+				"match": "([^\\\"\\x{005c}]+)",
+				"name": "string.quoted.double.jay"
+			}]
+		},
+		"unaryDefine":
+		{
+			"patterns": [
+			{
+				"begin": "([_a-zA-Z][_a-zA-Z0-9\\+\\*\\-\\^\\?\\|\\/\\x{003d}\\x{0026}\\x{0021}\\x{003c}\\x{003e}\\x{0025}\\x{007e}]*\\W*)(\\{)",
+				"beginCaptures":
+				{
+					"1":
+					{
+						"name": "entity.name.function.method.jay"
+					},
+					"2":
+					{
+						"name": "punctuation.definition.block.jay"
+					}
+				},
+				"patterns": [
+				{
+					"include": "#unaryDefine__1"
+				}],
+				"end": "(\\})",
+				"endCaptures":
+				{
+					"1":
+					{
+						"name": "punctuation.definition.block.jay"
+					}
+				}
+			}]
+		},
+		"unaryDefine__1":
+		{
+			"patterns": [
+			{
+				"include": "#main"
+			}]
+		}
+	}
+}
