@@ -114,12 +114,24 @@
 				}
 			},
 			{
-				"begin": "(\\[)",
+				"begin": "(\\[)(?:(?:(\\|)([^\\|]*)(\\|))?)",
 				"beginCaptures":
 				{
 					"1":
 					{
 						"name": "punctuation.definition.entity.jay"
+					},
+					"2":
+					{
+						"name": "entity.other.inherited-class.punctuation.jay"
+					},
+					"3":
+					{
+						"name": "entity.other.inherited-class.jay"
+					},
+					"4":
+					{
+						"name": "entity.other.inherited-class.punctuation.jay"
 					}
 				},
 				"patterns": [
@@ -179,6 +191,10 @@
 			{
 				"match": "(\\,)",
 				"name": "punctuation.separator.comma.jay"
+			},
+			{
+				"match": "(\\breturn\\b)",
+				"name": "keyword.control.return.jay"
 			},
 			{
 				"include": "#builtins"

@@ -3,6 +3,7 @@
   "displayName": "Jay Language",
   "description": "Syntax highlighting for the Jay language",
   "version": "0.0.1",
+  "publisher": "jay-language",
   "engines": {
     "vscode": "^1.72.0"
   },
