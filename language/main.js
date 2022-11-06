@@ -32,7 +32,7 @@ class Finch {
     //this.interpreter = new SaferEval({});
 
     const runtimeCode = readFileSync("./runtime.js", "utf-8");
-    const coreCode = this.compile("./core/core.fin", readFileSync("./core/core.fin").toString('utf-8'));
+    const coreCode = this.compile("./core/core.jay", readFileSync("./core/core.jay").toString('utf-8'));
     
     //this.interpreter.runInContext(runtimeCode)
     //this.interpreter.runInContext(coreCode)

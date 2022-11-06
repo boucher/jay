@@ -19,8 +19,8 @@ export default function RootLayout({children}) {
           <nav className={styles.nav}>
             <ul>
               <li><Link href="/">Overview</Link></li>
-              <li><Link href="/expressions">Expressions</Link></li>
-              <li><Link href="/objects">Objects</Link></li>
+              <li><Link href="/docs/expressions">Expressions</Link></li>
+              <li><Link href="/docs/objects">Objects</Link></li>
               <li><Link href="/repl">Try</Link></li>
             </ul>
           </nav>

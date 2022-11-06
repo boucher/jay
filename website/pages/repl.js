@@ -1,14 +1,13 @@
-//"use client";
 import { useEffect, useState, useRef, useCallback } from 'react'
 import styles from '../styles/Repl.module.css'
-
+import EditorComponent from '../components/editor'
 
 export default function REPL() {
   const workerRef = useRef()
+  const editorRef = useRef()
 
   let [result, setResult] = useState({})
   let [log, setLog] = useState([])
-  let [input, setInput] = useState("")
 
   useEffect(() => {
     if (!workerRef.current) {
@@ -30,33 +29,20 @@ export default function REPL() {
     workerRef.current.onmessage = onMessage  
   }, [log, setLog, result, setResult, workerRef])
 
-  const handleWork = useCallback(async () => {
+  const execute = useCallback(() => {
     setLog("")
-    workerRef.current?.postMessage(input.trim())
-  }, [input])
-
-  const handleKeyDown = useCallback(e => {
-    if (e.key === 'Enter' && e.shiftKey) {
-      handleWork()
-      e.stopPropagation()
-      e.preventDefault()
-    } 
-  }, [input])
-
-  const handleText = useCallback( e => {
-    console.log(e.target.value)
-    setInput(e.target.value)
-  }, [])
+    workerRef.current?.postMessage(editorRef.current.getValue().trim())
+  }, [editorRef])
 
   return (<>
     <p>
       Enter some code here to give Jay a try.
     </p>
 
-    <textarea className={ styles.replInput} value={input} onChange={handleText} onKeyDown={handleKeyDown} />
+    <EditorComponent className={ styles.replInput } editor={ editorRef } execute={ execute } />
 
     <div className={ styles.submit }>
-      <button onClick={handleWork}>evaluate</button>
+      <button onClick={execute}>evaluate</button>
       <span>or press shift + enter</span>
     </div>
 

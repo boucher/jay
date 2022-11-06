@@ -2,10 +2,10 @@
   "name": "jay-language",
   "displayName": "Jay Language",
   "description": "Syntax highlighting for the Jay language",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "publisher": "jay-language",
   "engines": {
-    "vscode": "^1.72.0"
+    "vscode": "^1.71.0"
   },
   "categories": [
     "Programming Languages"

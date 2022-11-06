@@ -4,7 +4,7 @@ import Compiler from '../../language/compile.js'
 
 import "../../language/runtime.js";
 
-const coreCode = compile(require("../../language/core/core.fin"), false);
+const coreCode = compile(require("../../language/core/core.jay"), false);
 eval?.(coreCode)
 
 const nativeLog = console.log
@@ -23,7 +23,7 @@ function run(source) {
     return {
       type: "end",
       code: code,
-      result: result && result['to-string']() || "null",
+      result: result !== undefined && result['to-string']() || "null",
     }
   } catch (e) {
     return {

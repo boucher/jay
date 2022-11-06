@@ -33,10 +33,10 @@ a:hover {
 
 code {
   font-size: 0.9rem;
-  background: #e4f3fd;
+}
+
+pre.shiki {
   border-radius: 5px;
-  font-family: Menlo, Monaco, Lucida Console, Liberation Mono, DejaVu Sans Mono,
-    Bitstream Vera Sans Mono, Courier New, monospace;
 }
 
 pre code {
@@ -46,13 +46,18 @@ pre code {
 }
 
 p code {
+  font-size: 0.9rem;
+  border-radius: 5px;
+  font-family: Menlo, Monaco, Lucida Console, Liberation Mono, DejaVu Sans Mono,
+    Bitstream Vera Sans Mono, Courier New, monospace;
   display: inline-block;
   padding: 0.1rem 0.25rem;
+  background: #e4f3fd;
 }
 
-.todo {
+blockquote {
   font-style: italic;
-  padding: 0.75rem;
+  padding: 5px 25px;
   background-color: rgb(252, 249, 216);
   border-radius: 5px;
 }
@@ -71,10 +76,10 @@ p code {
   h2, h3, h4 {
     color: rgb(150, 178, 216);
   }
-  code {
-    background: #111;
+  p code {
+    background: rgb(24, 33, 71);
   }
-  .todo {
+  blockquote {
     background-color: rgb(125, 66, 14);
   }
 }

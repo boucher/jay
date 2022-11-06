@@ -1,0 +1,590 @@
+#################################################################
+## Iro
+################################################################ 
+## Exported from https://eeyo.io/iro/
+## Can be compiled using https://github.com/c272/iro4cli
+################################################################
+
+name                   = jay
+file_extensions []     = jay;
+
+################################################################
+## Constants
+################################################################
+
+__OPERATOR_CHAR \= \+\*\-\^\?\|\/=&!<>%~
+__OPERATOR \= [$${__OPERATOR_CHAR}]+
+__IDENTIFIER_CHAR \= [_\-a-zA-Z0-9$${__OPERATOR_CHAR}]
+__IDENTIFIER \= [_a-zA-Z][_a-zA-Z0-9$${__OPERATOR_CHAR}]*
+__FIELD \= _$${__IDENTIFIER_CHAR}*
+__KEYWORD \= $${__IDENTIFIER_CHAR}+:
+__ANON_KEYWORD \= $${__IDENTIFIER_CHAR}*:
+
+################################################################
+## Styles
+################################################################
+
+styles [] {
+
+.comment : style {
+   color                = light_green
+   italic               = true
+   textmate_scope       = comment.line
+   pygments_scope       = Comment.Single
+}
+
+.blockComment : style {
+   color                = light_green
+   italic               = true
+   textmate_scope       = comment.block
+   pygments_scope       = Comment.Multiline
+}
+
+.parens : style {
+   color                = red
+   textmate_scope       = punctuation.definition.group
+   pygments_scope       = Punctuation
+}
+
+.cascade : style {
+   color                = green
+   textmate_scope       = keyword.operator.cascade
+   pygments_scope       = Punctuation
+}
+
+.comma : style {
+   color                = cyan
+   textmate_scope       = punctuation.separator.comma
+   pygments_scope       = Punctuation
+}
+
+.bindoperator : style {
+   color                = red
+   textmate_scope       = punctuation.definition.binding
+   pygments_scope       = Punctuation
+}
+
+.bindgroup : style {
+   color                = pink
+   textmate_scope       = punctuation.definition.binding.group
+   pygments_scope       = Punctuation
+}
+
+.block : style {
+   color                = purple
+   textmate_scope       = punctuation.definition.block
+   pygments_scope       = Punctuation
+}
+
+.methodName : style {
+   color                = orange
+   textmate_scope       = entity.name.function.method
+   pygments_scope       = Name.Function
+}
+
+.methodArgument : style {
+   color                = yellow
+   textmate_scope       = variable.parameter
+   pygments_scope       = Name.Other
+}
+
+.fieldName : style {
+   color                = yellow
+   textmate_scope       = entity.other.attribute-name
+   pygments_scope       = Name.Variable.Instance
+}
+
+.assignOperator : style { 
+   color                = cyan
+   textmate_scope       = keyword.operator.assignment.short
+   pygments_scope       = Keyword.Declaration
+}
+
+.longAssignOperator : style {
+   color                = cyan
+   bold                 = true
+   textmate_scope       = keyword.operator.assignment.long
+   pygments_scope       = Keyword.Declaration
+}
+
+.object : style {
+   color                = blue
+   textmate_scope       = punctuation.definition.entity
+   pygments_scope       = Punctuation
+ }
+
+.objectParentOperator : style {
+   color                = white
+   textmate_scope       = entity.other.inherited-class.punctuation
+}
+
+.objectParent : style { 
+   color                = orange
+   textmate_scope       = entity.other.inherited-class
+}
+
+.array : style {
+   color                = pink
+   textmate_scope       = punctuation.definition.array
+   pygments_scope       = Punctuation
+ }
+
+.variable : style {
+   color                = gold
+   textmate_scope       = variable
+   pygments_scope       = Name.Variable
+}
+
+.messageName : style {
+   color                = light_blue
+   textmate_scope       = entity.name.function.message
+   pygments_scope       = Name.Function
+}
+
+._self : style {
+   color                = pink
+   textmate_scope       = variable.language.self
+   pygments_scope       = Keyword
+}
+
+.builtin : style {
+   italic               = true
+   textmate_scope       = support.class
+   pygments_scope       = Name.Constant
+}
+
+.nil : style { 
+   color                = grey
+   textmate_scope       = constant.language.nil
+   pygments_scope       = Name.Constant
+}
+
+.boolean : style {
+   color                = cyan
+   italic               = true
+   textmate_scope       = constant.language.bool
+   pygments_scope       = Name.Constant
+}
+
+.operator : style {
+   color                = red
+   textmate_scope       = keyword.operator
+   pygments_scope       = Operator
+}
+
+.identifier : style {
+   color                = white
+   textmate_scope       = text
+}
+
+.numeric : style {
+   color                 = gold
+   bold                  = true
+   ace_scope             = constant.numeric
+   textmate_scope        = constant.numeric
+   pygments_scope        = Number
+}
+
+.string : style {
+   color                = brown
+   textmate_scope       = string.quoted.double
+   pygments_scope       = String.Double
+}
+
+.escapeChar : style { 
+   color                = brown
+   bold                 = true
+   textmate_scope       = constant.character.escape
+   pygments_scope       = String.Escape
+}
+
+.paramList : style {
+   color                = red_2
+   textmate_scope       = punctuation.definition.parameters
+   pygments_scope       = Punctuation
+}
+
+.return : style {
+   color                = blue
+   textmate_scope       = keyword.control.return
+}
+
+.illegal : style {
+   color                 = white
+   background_color      = red
+   ace_scope             = invalid
+   textmate_scope        = invalid
+   pygments_scope        = Generic.Error
+}
+
+}
+
+#################################################
+## Parse contexts
+#################################################
+
+contexts [] {
+
+##############################################
+## Main Context - Entry point context
+##############################################
+
+/* TODO:
+   - object parents
+   - return expressions
+*/
+
+main : context {
+
+   : include "comments" ;
+
+   // block literals
+   : inline_push {
+      regex          \= (\{)
+      styles []       = .block;
+      : pop {  
+         regex       \= (\})
+         styles []    = .block;
+      }
+      : inline_push {
+         regex       \= (\|)
+         styles[]     = .paramList;
+         default_style = .methodArgument
+         : pop {
+            regex    \= (\|)
+            styles [] = .paramList;
+         }
+      }
+      : include "main";
+   }
+   
+   // array literals
+   : inline_push {
+      regex          \= (\#\[)
+      styles []       = .array;
+      : pop {  
+         regex       \= (\])
+         styles []    = .array;
+      }
+      : include "main";
+   }
+
+   // variable assignments
+   : pattern {
+      regex          \= ($${__IDENTIFIER}\W*)(<--)
+      styles []      = .variable, .longAssignOperator;
+   }
+
+   : pattern {
+      regex          \= ($${__IDENTIFIER}\W*)(<-)
+      styles []      = .variable, .assignOperator;
+   }
+
+   // defines are only valid within bind groups, or object definitions
+   : inline_push {
+      regex          \= (::\W*)(\()
+      styles []       = .bindoperator, .bindgroup;
+      : pop {  
+         regex       \= (\))
+         styles []    = .bindgroup;
+      }
+      : include "defines";
+   }
+   
+   // object literals
+   : inline_push {
+      regex          \= (\[)(?:(?:(\|)([^\|]*)(\|))?)
+      styles []       = .object, .objectParentOperator, .objectParent, .objectParentOperator;
+      : pop {  
+         regex       \= (\])
+         styles []    = .object;
+      }
+      : include "defines";
+   }
+
+   // parens
+   
+   : inline_push {
+      regex          \= (\()
+      styles []       = .parens;
+      : pop {  
+         regex       \= (\))
+         styles []    = .parens;
+      }
+      : include "main";
+   }
+   
+   // single bind versions of defines are valid at the top level   
+   : include "singleFieldDefine";
+   : include "singleUnaryDefine";
+   : include "singleBinaryDefine";
+   : include "singleKeywordDefine";
+      
+   // messages
+   : include "messages";
+   
+   // cascades
+   : pattern {
+      regex          \= (\;)
+      styles []       = .cascade;
+   }
+
+   // comma
+   : pattern {
+      regex          \= (\,)
+      styles []       = .comma;
+   }
+
+   : pattern {
+      regex          \= (\breturn\b)
+      styles []      = .return;
+   }
+   
+   // built-ins (e.g. Ether, Object)
+   : include "builtins";
+   
+   : include "strings";
+   : include "boolean";
+   : include "identifier";
+   : include "numeric";
+   : include "operator";
+
+
+   // what is unparsed?
+   : pattern {
+      regex          \= ([^\s])
+      styles []       = .illegal;
+   }
+
+}
+
+
+#################################################
+## Messages contexts
+#################################################
+
+messages : context {
+   : pattern {
+      regex       \= ($${__KEYWORD})
+      styles []   = .messageName;
+   }
+}
+
+
+#################################################
+## Defines contexts
+#################################################
+
+defines : context { 
+   : include "comments" ;
+   : include "fieldDefine";
+   : include "keywordDefine";
+   : include "binaryDefine";
+   : include "unaryDefine";
+}
+
+fieldDefine : context {
+   : inline_push  {
+      regex          \= ($${__IDENTIFIER}\W*)(<-)
+      styles []      = .fieldName, .assignOperator;
+      : eol_pop {}
+      : include "main";
+   }
+}
+
+
+singleFieldDefine : context {
+   : inline_push  {
+      regex          \= (::\W*)($${__IDENTIFIER}\W*)(<-)
+      styles []      = .bindoperator, .fieldName, .assignOperator;
+      : eol_pop {}
+      : include "main";
+   }
+}
+
+unaryDefine : context {
+   : inline_push {
+      regex          \= ($${__IDENTIFIER}\W*)(\{)
+      styles []       = .methodName, .block;
+      : pop {
+         regex       \= (\})
+         styles []    = .block;
+      }
+      : include "main";
+   }
+}
+
+singleUnaryDefine : context {
+   : inline_push {
+      regex          \= (::\W*)($${__IDENTIFIER}\W*)(\{)
+      styles []       = .bindoperator, .methodName, .block;
+      : pop {
+         regex       \= (\})
+         styles []    = .block;
+      }
+      : include "main";
+   }
+}
+
+binaryDefine : context {
+   : inline_push {
+      regex          \= ($${__OPERATOR}\W*)($${__IDENTIFIER}\W*)(\{)
+      styles []       = .methodName, .methodArgument, .block;
+      : pop {
+         regex       \= (\})
+         styles []    = .block;
+      }
+      : include "main";
+   }
+}
+
+singleBinaryDefine : context {
+   : inline_push {
+      regex          \= (::\W*)($${__OPERATOR}\W*)($${__IDENTIFIER}\W*)(\{)
+      styles []       = .bindoperator, .methodName, .methodArgument, .block;
+      : pop {
+         regex       \= (\})
+         styles []    = .block;
+      }
+      : include "main";
+   }
+}
+
+keywordDefine : context {
+      
+   : inline_push {
+      regex          \= ($${__ANON_KEYWORD}\W*)($${__IDENTIFIER})
+      styles []       = .methodName, .methodArgument;
+      : pop {
+         regex       \= (?=\{)
+         styles []    = .block;
+      }
+      : include "keywordDefine";
+   }
+   
+   : inline_push {
+      regex          \= (\{)
+      styles []       = .block;
+      : pop {  
+         regex       \= (\})
+         styles []    = .block;
+      }
+      : include "main";
+   }
+}
+
+singleKeywordDefine : context {
+      
+   : inline_push {
+      regex          \= (::\W*)($${__ANON_KEYWORD}\W*)($${__IDENTIFIER})
+      styles []       = .bindoperator, .methodName, .methodArgument;
+      : pop {
+         regex       \= (?=\{)
+         styles []    = .block;
+      }
+      : include "keywordDefine";
+   }
+   
+   : inline_push {
+      regex          \= (\{)
+      styles []       = .block;
+      : pop {  
+         regex       \= (\})
+         styles []    = .block;
+      }
+      : include "main";
+   }
+}
+
+###########################################
+## Literals Contexts
+###########################################
+
+builtins : context {
+   : pattern {
+      regex          \= (?:\b(self)\s)
+      styles []      = ._self;
+   }
+   : pattern {
+      regex          \= (?:\b(Object|Ether|Arrays|Blocks|Fibers|Numbers|Strings|Switches)\s)
+      styles []      = .builtin;
+   }
+
+   : pattern {
+      regex          \= (?:\b(nil)\s)
+      styles []      = .nil;
+   }
+}
+
+strings : context {
+   : inline_push {
+      regex       \= (\")
+      styles []    = .string;
+      : pop {
+         regex    \= (\")
+         styles [] = .string;
+      }
+      : pattern {
+         regex    \= ((?:\\u[0-9a-f]{4})|(?:\\["\\/bfnrt]))
+         styles [] = .escapeChar;
+      }
+      : pattern {
+         regex    \= ([^\"\\]+)
+         styles [] = .string;
+      }
+   }
+}
+
+boolean : context {
+   : pattern {
+      regex          \= (?:\b(true|false)\s)
+      styles []      = .boolean;
+   }
+}
+
+identifier : context { 
+   : pattern {
+      regex          \= ($${__IDENTIFIER})
+      styles []      = .identifier;
+   }
+}
+
+numeric : context {
+   : pattern {
+      regex          \= (-?\b\d+)
+      styles []       = .numeric;
+   }
+}
+
+operator : context {
+   : pattern {
+      regex          \= ($${__OPERATOR})
+      styles []      = .operator;
+   }
+}
+
+###########################################
+## Multi Line Comment Context
+###########################################
+
+comments : context {
+   description        = multiline
+
+   : pattern {
+      regex          \= (//.*)
+      styles []       = .comment;
+   }
+
+   : inline_push {
+      regex          \= (/\*)
+      styles []       = .blockComment;
+      default_style   = .blockComment
+      : pop {
+         regex       \= (\*/)
+         styles []    = .blockComment;
+      }
+   }
+   
+}
+   
+}

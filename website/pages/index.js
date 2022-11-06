@@ -1,6 +1,42 @@
 import Link from 'next/link';
+import getProcessor from "../components/highlight";
 
-export default function Home() {
+export async function getStaticProps({ params }) {
+  const sample = `\`\`\`jay
+// create an object and put it in a variable "dragon"
+dragon <- [
+  // define a "trace:" method for outputting the series of left and
+  // right turns needed to draw a dragon curve.
+  trace: depth {
+    self trace-depth: depth turn: "R"
+    write-line: "" // end the line
+  }
+
+  // the main recursive method
+  trace-depth: n turn: turn {
+    if: n > 0 then: {
+      self trace-depth: n - 1 turn: "R"
+      write: turn
+      self trace-depth: n - 1 turn: "L"
+    }
+  }
+]
+
+// now let's try it
+dragon trace: 5
+\`\`\``;
+
+  let processor = await getProcessor()
+  const content = await processor.process(sample) //await markdownToHtml(doc);
+
+  return {
+    props: {
+      sample: content.value,
+    },
+  };
+}
+
+export default function Home({ sample }) {
   return (<>
     <p>
       Jay is a dynamically-typed, <a href="http://en.wikipedia.org/wiki/Object-oriented_programming">object-oriented</a>, <a href="http://en.wikipedia.org/wiki/Prototype-based_programming">prototype-based</a> programming language that  compiles to  <a href="https://developer.mozilla.org/en/About_JavaScript">JavaScript</a>. It is based on the <a href="http://finch.stuffwithstuff.com/index.html">Finch</a> language created by <a href="https://twitter.com/munificentbob">Bob Nystrom</a>, which itself is inspired by <a href="http://www.smalltalk.org/main/">Smalltalk</a>, <a href="http://selflanguage.org/">Self</a>, and JavaScript.
@@ -27,30 +63,6 @@ export default function Home() {
       Here&apos;s a little example to get you going. This little program doesn&apos;t draw, but it will tell you what turns to make to draw a dragon curve:
     </p>
 
-    <pre><code className="block">
-{`// create an object and put it in a variable "dragon"
-dragon <- [
-  // define a "trace:" method for outputting the series of left and
-  // right turns needed to draw a dragon curve.
-  trace: depth {
-    self trace-depth: depth turn: "R"
-    write-line: "" // end the line
-  }
-
-  // the main recursive method
-  trace-depth: n turn: turn {
-    if: n > 0 then: {
-      self trace-depth: n - 1 turn: "R"
-      write: turn
-      self trace-depth: n - 1 turn: "L"
-    }
-  }
-]
-
-// now let's try it
-dragon trace: 5
-`}
-    </code></pre>
-
+    <div dangerouslySetInnerHTML={{ __html: sample }} ></div>
   </>)
 }
