@@ -1,6 +1,15 @@
 (function(){ 
 
   const BRIDGE = true
+  globalThis.$FixBridgedTypes = function(toAssign) {
+    for (let t of [$Numbers, $Strings, $Arrays, $Blocks]) {
+      for (let k of Object.keys(toAssign)) {
+        if (!t.hasOwnProperty(k)) {
+          t[k] = toAssign[k]
+        }
+      }
+    }
+  }
 
   globalThis.ReturnExpr = function(result, id) {
     this.result = result
@@ -203,10 +212,7 @@
   })
 
   if (BRIDGE) {
-    Object.assign($Numbers, $Object)
-    Object.assign($Arrays, $Object)
-    Object.assign($Blocks, $Object)
-    Object.assign($Strings, $Object)
+    $FixBridgedTypes($Object)
   }
 
 })()

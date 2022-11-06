@@ -113,11 +113,15 @@ Expr.Array.prototype.compileTo = function(compiler) {
 }
 
 Expr.Bind.prototype.compileTo = function(compiler) {
-  compiler.write(`Object.assign(`)
+  compiler.indent()
+  compiler.writeLine("(() => {")
+
+  compiler.write("let r = (")
   this.receiver.compileTo(compiler)
+  compiler.writeLine(")")
 
   compiler.indent()
-  compiler.writeLine(", {")
+  compiler.writeLine("let p = {")
 
   this.defines.forEach((d, i) => {
     d.compileTo(compiler)
@@ -125,8 +129,15 @@ Expr.Bind.prototype.compileTo = function(compiler) {
 
   compiler.dedent()
   compiler.writeLine("")
+  compiler.writeLine("}")
 
-  compiler.write("})")
+  compiler.writeLine("Object.assign(r, p)")
+
+  compiler.writeLine("if (r == $Object) { $FixBridgedTypes(p) }")
+
+  compiler.dedent()
+  compiler.writeLine("return r")
+  compiler.write("})()")
 }
 
 function wrapReturn(expr, compiler) {
