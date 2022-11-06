@@ -4,6 +4,8 @@ import { loadWASM,  } from 'onigasm' // peer dependency of 'monaco-textmate'
 import { Registry } from 'monaco-textmate' // peer dependency
 import { wireTmGrammars } from 'monaco-editor-textmate'
 
+let loadedOnce = false;
+
 function EditorComponent(props) {
   const wrapper = useRef();
 
@@ -17,7 +19,10 @@ function EditorComponent(props) {
       const JaySyntaxJSON = require("../../highlighting/syntaxes/jay.tmLanguage.json")
       const Theme = require("../../highlighting/monokai-theme.json")
       
-      await loadWASM("https://unpkg.com/onigasm/lib/onigasm.wasm") // See https://www.npmjs.com/package/onigasm#light-it-up
+      if (!loadedOnce) {
+        loadedOnce = true
+        await loadWASM("https://unpkg.com/onigasm/lib/onigasm.wasm") // See https://www.npmjs.com/package/onigasm#light-it-up
+      }
 
       const registry = new Registry({
         getGrammarDefinition: async (scopeName) => {

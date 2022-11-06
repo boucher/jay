@@ -1,5 +1,31 @@
+.instructions {
+  display: flex;
+
+}
+
+.instructions p {
+  flex-grow: 1;
+  margin: 1rem 0 0 0;
+}
+
+.instructions ul {
+  display: inline;
+  margin: 1rem 0 0 0;
+}
+
+.instructions ul:before {
+  content: 'e.x. ';
+  color: #999;
+}
+
+.instructions li {
+  display: inline;
+  list-style-type: none;
+  margin: 0 0.5rem;
+}
+
 .replInput {
-  min-height: 20rem;
+  min-height: 25rem;
   margin: 0.75rem 0;
   border-radius: 5px;
   overflow: hidden;
@@ -17,10 +43,6 @@
 .log {
   border-bottom: 1px solid #c7e5fa;
   padding-bottom: 1rem;
-}
-
-.replCode {
-
 }
 
 .replError {

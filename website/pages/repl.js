@@ -2,6 +2,42 @@ import { useEffect, useState, useRef, useCallback } from 'react'
 import styles from '../styles/Repl.module.css'
 import EditorComponent from '../components/editor'
 
+const snippets = {
+dragon: `// create an object and put it in a variable "dragon"
+dragon <- [
+  // define a "trace:" method for outputting the series of left and
+  // right turns needed to draw a dragon curve.
+  trace: depth {
+    self trace-depth: depth turn: "R"
+    write-line: "" // end the line
+  }
+
+  // the main recursive method
+  trace-depth: n turn: turn {
+    if: n > 0 then: {
+      self trace-depth: n - 1 turn: "R"
+      write: turn
+      self trace-depth: n - 1 turn: "L"
+    }
+  }
+]
+
+// now let's try it
+dragon trace: 5`,
+
+fib: `// add a fib method to Numbers
+Numbers :: fib {
+  if: self = 0 then: { return 0 }
+  if: self = 1 then: { return 1 }
+  (self - 2) fib + (self - 1) fib
+}
+
+// print sequence
+from: 0 to: 20 do: {|i|
+  write-line: "" + i + " fib = " + i fib
+}`
+};
+
 export default function REPL() {
   const workerRef = useRef()
   const editorRef = useRef()
@@ -35,9 +71,15 @@ export default function REPL() {
   }, [editorRef])
 
   return (<>
-    <p>
-      Enter some code here to give Jay a try.
-    </p>
+    <div className={ styles.instructions }>
+      <p>
+        Enter some code here to give Jay a try.
+      </p>
+      <ul>
+        <li><a href="#" onClick={() => { editorRef.current.setValue(snippets.dragon) }}>dragon</a></li>
+        <li><a href="#" onClick={() => { editorRef.current.setValue(snippets.fib) }}>fibonacci</a></li>
+      </ul>
+    </div>
 
     <EditorComponent className={ styles.replInput } editor={ editorRef } execute={ execute } />
 
