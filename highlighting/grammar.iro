@@ -273,18 +273,18 @@ main : context {
 
    // variable assignments
    : pattern {
-      regex          \= ($${__IDENTIFIER}\W*)(<--)
+      regex          \= ($${__IDENTIFIER}\s*)(<--)
       styles []      = .variable, .longAssignOperator;
    }
 
    : pattern {
-      regex          \= ($${__IDENTIFIER}\W*)(<-)
+      regex          \= ($${__IDENTIFIER}\s*)(<-)
       styles []      = .variable, .assignOperator;
    }
 
    // defines are only valid within bind groups, or object definitions
    : inline_push {
-      regex          \= (::\W*)(\()
+      regex          \= (::\s*)(\()
       styles []       = .bindoperator, .bindgroup;
       : pop {  
          regex       \= (\))
@@ -392,7 +392,7 @@ defines : context {
 
 fieldDefine : context {
    : inline_push  {
-      regex          \= ($${__IDENTIFIER}\W*)(<-)
+      regex          \= ($${__IDENTIFIER}\s*)(<-)
       styles []      = .fieldName, .assignOperator;
       : eol_pop {}
       : include "main";
@@ -402,7 +402,7 @@ fieldDefine : context {
 
 singleFieldDefine : context {
    : inline_push  {
-      regex          \= (::\W*)($${__IDENTIFIER}\W*)(<-)
+      regex          \= (::\s*)($${__IDENTIFIER}\s*)(<-)
       styles []      = .bindoperator, .fieldName, .assignOperator;
       : eol_pop {}
       : include "main";
@@ -411,7 +411,7 @@ singleFieldDefine : context {
 
 unaryDefine : context {
    : inline_push {
-      regex          \= ($${__IDENTIFIER}\W*)(\@?\{)
+      regex          \= ($${__IDENTIFIER}\s*)(\@?\{)
       styles []       = .methodName, .block;
       : pop {
          regex       \= (\})
@@ -423,7 +423,7 @@ unaryDefine : context {
 
 singleUnaryDefine : context {
    : inline_push {
-      regex          \= (::\W*)($${__IDENTIFIER}\W*)(\@?\{)
+      regex          \= (::\s*)($${__IDENTIFIER}\s*)(\@?\{)
       styles []       = .bindoperator, .methodName, .block;
       : pop {
          regex       \= (\})
@@ -435,7 +435,7 @@ singleUnaryDefine : context {
 
 binaryDefine : context {
    : inline_push {
-      regex          \= ($${__OPERATOR}\W*)($${__IDENTIFIER}\W*)(\@?\{)
+      regex          \= ($${__OPERATOR}\s*)($${__IDENTIFIER}\s*)(\@?\{)
       styles []       = .methodName, .methodArgument, .block;
       : pop {
          regex       \= (\})
@@ -447,7 +447,7 @@ binaryDefine : context {
 
 singleBinaryDefine : context {
    : inline_push {
-      regex          \= (::\W*)($${__OPERATOR}\W*)($${__IDENTIFIER}\W*)(\@?\{)
+      regex          \= (::\s*)($${__OPERATOR}\s*)($${__IDENTIFIER}\s*)(\@?\{)
       styles []       = .bindoperator, .methodName, .methodArgument, .block;
       : pop {
          regex       \= (\})
@@ -460,7 +460,7 @@ singleBinaryDefine : context {
 keywordDefine : context {
       
    : inline_push {
-      regex          \= ($${__ANON_KEYWORD}\W*)($${__IDENTIFIER})
+      regex          \= ($${__ANON_KEYWORD}\s*)($${__IDENTIFIER})
       styles []       = .methodName, .methodArgument;
       : pop {
          regex       \= (?=\@?\{)
@@ -483,7 +483,7 @@ keywordDefine : context {
 singleKeywordDefine : context {
       
    : inline_push {
-      regex          \= (::\W*)($${__ANON_KEYWORD}\W*)($${__IDENTIFIER})
+      regex          \= (::\s*)($${__ANON_KEYWORD}\s*)($${__IDENTIFIER})
       styles []       = .bindoperator, .methodName, .methodArgument;
       : pop {
          regex       \= (?=\@?\{)
