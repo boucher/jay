@@ -12,13 +12,15 @@ file_extensions []     = jay;
 ## Constants
 ################################################################
 
+
+__B \= (?:(?=$${__IDCHAR})(?<!$${__IDCHAR})|(?<=$${__IDCHAR})(?!$${__IDCHAR}))
 __OPERATOR_CHAR \= \+\*\-\^\?\|\/=&!<>%~
 __OPERATOR \= [$${__OPERATOR_CHAR}]+
-__IDENTIFIER_CHAR \= [_\-a-zA-Z0-9$${__OPERATOR_CHAR}]
+__IDCHAR \= [_\-a-zA-Z0-9$${__OPERATOR_CHAR}]
 __IDENTIFIER \= [_a-zA-Z][_a-zA-Z0-9$${__OPERATOR_CHAR}]*
-__FIELD \= _$${__IDENTIFIER_CHAR}*
-__KEYWORD \= $${__IDENTIFIER_CHAR}+:
-__ANON_KEYWORD \= $${__IDENTIFIER_CHAR}*:
+__FIELD \= _$${__IDCHAR}*
+__KEYWORD \= $${__IDCHAR}+:
+__ANON_KEYWORD \= $${__IDCHAR}*:
 
 ################################################################
 ## Styles
@@ -209,6 +211,11 @@ styles [] {
    textmate_scope       = keyword.control.return
 }
 
+.await : style {
+   color                = blue
+   textmate_scope       = keyword.control.flow.js
+}
+
 .illegal : style {
    color                 = white
    background_color      = red
@@ -229,18 +236,13 @@ contexts [] {
 ## Main Context - Entry point context
 ##############################################
 
-/* TODO:
-   - object parents
-   - return expressions
-*/
-
 main : context {
 
    : include "comments" ;
 
    // block literals
    : inline_push {
-      regex          \= (\{)
+      regex          \= (\@?\{)
       styles []       = .block;
       : pop {  
          regex       \= (\})
@@ -257,7 +259,7 @@ main : context {
       }
       : include "main";
    }
-   
+
    // array literals
    : inline_push {
       regex          \= (\#\[)
@@ -336,10 +338,15 @@ main : context {
    }
 
    : pattern {
-      regex          \= (\breturn\b)
+      regex          \= ($${__B}return$${__B})
       styles []      = .return;
    }
-   
+
+   : pattern {
+      regex          \= ($${__B}await$${__B})
+      styles []      = .await;
+   }
+
    // built-ins (e.g. Ether, Object)
    : include "builtins";
    
@@ -404,7 +411,7 @@ singleFieldDefine : context {
 
 unaryDefine : context {
    : inline_push {
-      regex          \= ($${__IDENTIFIER}\W*)(\{)
+      regex          \= ($${__IDENTIFIER}\W*)(\@?\{)
       styles []       = .methodName, .block;
       : pop {
          regex       \= (\})
@@ -416,7 +423,7 @@ unaryDefine : context {
 
 singleUnaryDefine : context {
    : inline_push {
-      regex          \= (::\W*)($${__IDENTIFIER}\W*)(\{)
+      regex          \= (::\W*)($${__IDENTIFIER}\W*)(\@?\{)
       styles []       = .bindoperator, .methodName, .block;
       : pop {
          regex       \= (\})
@@ -428,7 +435,7 @@ singleUnaryDefine : context {
 
 binaryDefine : context {
    : inline_push {
-      regex          \= ($${__OPERATOR}\W*)($${__IDENTIFIER}\W*)(\{)
+      regex          \= ($${__OPERATOR}\W*)($${__IDENTIFIER}\W*)(\@?\{)
       styles []       = .methodName, .methodArgument, .block;
       : pop {
          regex       \= (\})
@@ -440,7 +447,7 @@ binaryDefine : context {
 
 singleBinaryDefine : context {
    : inline_push {
-      regex          \= (::\W*)($${__OPERATOR}\W*)($${__IDENTIFIER}\W*)(\{)
+      regex          \= (::\W*)($${__OPERATOR}\W*)($${__IDENTIFIER}\W*)(\@?\{)
       styles []       = .bindoperator, .methodName, .methodArgument, .block;
       : pop {
          regex       \= (\})
@@ -456,14 +463,14 @@ keywordDefine : context {
       regex          \= ($${__ANON_KEYWORD}\W*)($${__IDENTIFIER})
       styles []       = .methodName, .methodArgument;
       : pop {
-         regex       \= (?=\{)
+         regex       \= (?=\@?\{)
          styles []    = .block;
       }
       : include "keywordDefine";
    }
    
    : inline_push {
-      regex          \= (\{)
+      regex          \= (\@?\{)
       styles []       = .block;
       : pop {  
          regex       \= (\})
@@ -479,14 +486,14 @@ singleKeywordDefine : context {
       regex          \= (::\W*)($${__ANON_KEYWORD}\W*)($${__IDENTIFIER})
       styles []       = .bindoperator, .methodName, .methodArgument;
       : pop {
-         regex       \= (?=\{)
+         regex       \= (?=\@?\{)
          styles []    = .block;
       }
       : include "keywordDefine";
    }
    
    : inline_push {
-      regex          \= (\{)
+      regex          \= (\@?\{)
       styles []       = .block;
       : pop {  
          regex       \= (\})
@@ -502,16 +509,16 @@ singleKeywordDefine : context {
 
 builtins : context {
    : pattern {
-      regex          \= (?:\b(self)\s)
+      regex          \= (?:$${__B}(self)$${__B})
       styles []      = ._self;
    }
    : pattern {
-      regex          \= (?:\b(Object|Ether|Arrays|Blocks|Fibers|Numbers|Strings|Switches)\s)
+      regex          \= (?:$${__B}(Object|Ether|Arrays|Blocks|Fibers|Numbers|Strings|Switches)$${__B})
       styles []      = .builtin;
    }
 
    : pattern {
-      regex          \= (?:\b(nil)\s)
+      regex          \= (?:$${__B}(nil)$${__B})
       styles []      = .nil;
    }
 }
@@ -537,7 +544,7 @@ strings : context {
 
 boolean : context {
    : pattern {
-      regex          \= (?:\b(true|false)\s)
+      regex          \= (?:$${__B}(true|false)$${__B})
       styles []      = .boolean;
    }
 }
@@ -551,7 +558,7 @@ identifier : context {
 
 numeric : context {
    : pattern {
-      regex          \= (-?\b\d+)
+      regex          \= ($${__B}-?\d+(?:\.\d+)?)
       styles []       = .numeric;
    }
 }
@@ -578,10 +585,15 @@ comments : context {
    : inline_push {
       regex          \= (/\*)
       styles []       = .blockComment;
-      default_style   = .blockComment
+
       : pop {
          regex       \= (\*/)
          styles []    = .blockComment;
+      }
+      : include "comments";
+      : pattern {
+         regex          \= ([^\s])
+         styles []       = .blockComment;
       }
    }
    

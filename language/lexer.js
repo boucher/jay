@@ -29,6 +29,8 @@ Token.Self         = "self"
 Token.Undefined    = "undefined"
 Token.Break        = "break"
 Token.Return       = "return"
+Token.Await        = "await"
+Token.At           = "at"
 Token.Number       = "number"
 Token.String       = "string"
 Token.Name         = "name"
@@ -204,6 +206,7 @@ class Lexer {
         case ".": return this.singleToken(Token.Dot)
         case "|": return this.singleToken(Token.Pipe)
         case "#": return this.singleToken(Token.Hash)
+        case "@": return this.singleToken(Token.At)
 
         case "\"":
           return this.readString()
@@ -375,6 +378,8 @@ class Lexer {
           type = Token.Undefined; break
         case "return":
           type = Token.Return; break
+        case "await":
+          type = Token.Await; break
       }  
     }
 

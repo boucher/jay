@@ -21,7 +21,6 @@
 
   globalThis.$Object = {}
   globalThis.$Ether = Object.create($Object)
-  //globalThis.$Fibers = Object.create($Object)
 
   globalThis.True = Object.create($Object)
   globalThis.False = Object.create($Object)
@@ -88,6 +87,11 @@
       console.log(text["to-string"]()+"\n")
     },
 
+    "sleep:": async function(milliseconds) {
+      return new Promise((resolve, reject) => {
+        setTimeout(resolve, milliseconds)
+      })
+    }
   })
 
   const BlockProto = {};
@@ -210,6 +214,34 @@
       return BOOL(this >= s)
     },
   })
+
+  /*
+  let Scheduler = globalThis.Scheduler = new function(){
+    this.fibers = []
+    this.current = null
+  }
+
+  Scheduler.switch = function(fiber, value) {
+    this.current = fiber
+    yield fiber(value)
+  }
+
+  globalThis.$Fibers = Object.create($Object)
+
+  Object.assign($Fibers, {
+    "new-fiber": function(fn) {
+      return function *() {
+        fn()
+      }
+    },
+    "current-fiber": function() {
+      return Scheduler.current
+    },
+    "switch-to-fiber": function(value) {
+      yield value
+    },
+  })
+  */
 
   if (BRIDGE) {
     $FixBridgedTypes($Object)

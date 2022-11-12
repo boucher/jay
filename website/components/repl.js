@@ -13,12 +13,12 @@ console.log = function(m) {
   postMessage({ type: "log", log: m })
 }
 
-function run(source) {
+async function run(source) {
   let code, result
 
   try {
     code = compile(source)
-    result = eval?.(code)
+    result = await eval?.(code)
 
     return {
       type: "end",
@@ -51,6 +51,6 @@ function compile(source, inline=false) {
   return Compiler.compile(expressions, inline);
 }
 
-addEventListener('message', (event) => {
-  postMessage(run(event.data))
+addEventListener('message', async (event) => {
+  postMessage(await run(event.data))
 })

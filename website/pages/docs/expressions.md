@@ -237,6 +237,36 @@ The above code creates a block that takes two arguments. When called, it returns
 
 If you pass too many arguments to a block, the extra ones will be ignored. If you don't pass enough, it will assign the special value nil to the missing ones.
 
+### Async Blocks
+
+Jay uses the native JavaScript ability of async await transparently, by allowing you to create async blocks, and await them. To create an async block (equivalent to `async function` in JS), you can add an `@` before the block declaration, like this:
+
+```jay
+@{
+  "inside an async block"
+}
+```
+
+The return value of an async block will always be a *Promise*, regardless of whether you return an immediate value, or another promise. 
+
+> Currently, there's no way to actually interact with Promises directly, but I will fix that soon.
+
+### Await
+
+In order to wait for a promise to be fulfilled before continuing, you can use `await`, followed by an expression that evaluates to a promise.
+
+```jay
+write: "sleeping..."
+await sleep: 1000
+write: "awake"
+```
+
+In the code above, the call to `sleep:then:` will create a new timer and return a promise that will be fulfilled when timer goes off. `await` will then wait for the promise to be fulfilled before resuming execution. So you should see the first line printed, followed one second (1000ms) later by `awake`.
+
+You can only `await` inside an *async block*. Unlike JavaScript, you can also await things at the top level of your code, because all code is wrapped by the runtime in an async function.
+
+> This will be more useful once the standard library grows to encompass async things, like timers or imports.
+
 ### Return
 
 Because control structures are implemented as blocks and messages, it can be frustrating if you want to bail early. For this, there is a `return` expression, which will take whatever argument is passed on the right and return it from the enclosing method.

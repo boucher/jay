@@ -1,7 +1,7 @@
 const Expressions = {
   Array: ["elements"],
   Bind: ["receiver", "defines"],
-  Block: ["params", "body"],
+  Block: ["params", "body", "async"],
   Message: ["receiver", "name", "args"],
   Name: ["name"],
   Number: ["value"],
@@ -12,6 +12,7 @@ const Expressions = {
   String: ["value"],
   Var: ["name", "value"],
   Return: ["result"],
+  Await: ["promise"],
   Error: ["error"],
 }
 

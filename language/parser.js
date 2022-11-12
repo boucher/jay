@@ -226,6 +226,10 @@ class Parser {
       return new Expr.Self()
     }
 
+    if (this.match(Token.Await)) {
+      return new Expr.Await(this.assignment())
+    }
+
     if (this.match(Token.Return)) {
       let result
       if (this.ifLookAhead(Token.Line) || 
@@ -276,7 +280,8 @@ class Parser {
       return new Expr.Array(elements)
     }
   
-    if (this.match(Token.LeftBrace)) {
+    let [at, brace] = this.match2(Token.At, Token.LeftBrace)
+    if ((at && brace) || (brace = this.match(Token.LeftBrace))) {
       let params = []
       if (this.match(Token.Pipe)) {
         this.whileMatchDo(Token.Name, name => {
@@ -288,7 +293,7 @@ class Parser {
       let body = this.expression()
       this.consume(Token.RightBrace, "Expect '}' to end block.")
 
-      return new Expr.Block(params, body)
+      return new Expr.Block(params, body, at != undefined)
     }
 
     if (this.ifLookAhead(Token.Keyword)) {
@@ -374,6 +379,7 @@ class Parser {
   }
 
   parseDefineMethod(params) {
+    let async = this.match(Token.At)
     this.consume(Token.LeftBrace, "Expect block body for method.")
     
     let body
@@ -383,7 +389,7 @@ class Parser {
 
     this.consume(Token.RightBrace, "Expect '}' after method body.")
 
-    return new Expr.Block(params, body || new Expr.Name("nil"))
+    return new Expr.Block(params, body || new Expr.Name("nil"), async)
   }
 
 }

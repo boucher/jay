@@ -50,7 +50,7 @@ class Compiler {
     let compiler =new Compiler()
 
     if (!inline) {
-      compiler.write("(function(){")
+      compiler.write("(async function(){")
       compiler.indent()
       compiler.writeLine()
       wrapReturn(expression, compiler)
@@ -164,10 +164,15 @@ function wrapReturn(expr, compiler) {
 }
 
 Expr.Block.prototype.compileTo = function(compiler, methodDefinition=false) {
+  compiler.write("(")
+  if (this.async) {
+    compiler.write("async ")
+  }
+
   if (!methodDefinition) {
-    compiler.write("((")
+    compiler.write("(")
   } else {
-    compiler.write("(function(")
+    compiler.write("function(")
   }
 
   this.params.forEach((p, i) =>  {
@@ -228,6 +233,12 @@ Expr.Return.prototype.compileTo = function(compiler) {
   this.result.compileTo(compiler)
   compiler.write(`, ${enclosingMethodCompiler(compiler).id}`)
   compiler.write(")})()")
+}
+
+Expr.Await.prototype.compileTo = function(compiler) {
+  compiler.write("await (")
+  this.promise.compileTo(compiler)
+  compiler.write(")")
 }
 
 Expr.Error.prototype.compileTo = function(compiler) {
