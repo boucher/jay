@@ -50,6 +50,19 @@ false :: (
 )
 
 Ether :: (
+
+  class: proto {
+    class: proto superclass: Class
+  }
+
+  /*
+  class: proto superclass: classParent {
+    class <- [|classParent|
+      proto <- proto
+    ]
+  }
+  */
+
   from: start to: end step: step do: block {
     i <- start
 
@@ -95,7 +108,7 @@ Ether :: (
   }
 )
 
-Blocks :: block? { true }
+Block proto :: block? { true }
 
 /*
 
@@ -131,7 +144,7 @@ Fibers :: (
 )
 */
 
-Numbers :: (
+Number proto :: (
   number? { true }
 
   // Double-dispatch.
@@ -152,7 +165,7 @@ Object :: (
   =string: left { false }
 )
 
-Strings :: (
+String proto :: (
   string? { true }
 
   // Adding a number to a string converts it to a string and concatenates.
@@ -170,7 +183,7 @@ Strings :: (
   from: from to: to { self from: from count: to - from }
 )
 
-Array <- [
+Array :: (
   count: count {
     self count: count fill-with: nil
   }
@@ -181,9 +194,9 @@ Array <- [
     from: 1 to: count do: {|i| result add: element }
     result
   }
-]
+)
 
-Arrays :: (
+Array proto :: (
   array? { true }
 
   ++ right {
@@ -222,7 +235,7 @@ Arrays :: (
 Object :: true? { false }
 true :: true? { true }
 
-Blocks :: true? { self call true? }
+Block proto :: true? { self call true? }
 
 // Short-circuiting logical operators
 Object :: (

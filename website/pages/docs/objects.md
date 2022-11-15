@@ -151,7 +151,6 @@ fred ? "plunger"
 fred give: "plunger" to: "Bill"}
 ```
 
-
 ### Multibinds
 
 It's common to want to define a number of methods on an object all at once. To make that easier, you can also use parentheses after *::* and define a group of methods, like so:
@@ -241,51 +240,52 @@ In the same way that methods are inherited, fields are too. When you access a fi
 
 When you set a field, it will always set it in the receiving object, even if it's set by an inherited method.
 
-## Prototypes and Type Objects
+## Classes, Prototypes, and Types
 
-Jay doesn't have classes, but it's still common to define "kinds of things" when you write programs. Classes are a common pattern for doing that. In Jay, they are just that: a convention that you can follow when it makes sense.
+Although Jay uses prototypal inheritance rather than standard classical inheritance, it's still common to define "kinds of things" when you write programs. Classes are a common pattern for doing that, and in Jay, they are just that: a convention that you can follow when it makes sense.
 
 A class in other languages generally defines two things: a set of behavior that all instances of the class share, and some behavior that is specific to the class itself. In class-based languages, the former is basically your instance methods and fields. The latter is the "static" methods of the class and the constructors.
 
-In Jay, we define those as two separate objects. We call the former the "prototype" and the latter the "type object". The prototype's job is to be the parent that all instances of this type inherit from. That way, they all share the prototype's methods and behave the same.
+In Jay, those are two separate objects: one which we refer to as the class object, and the other which serves as an instance prototype. The prototype's job is to be the parent that all instances of this type inherit from. That way, they all share the prototype's methods and behave the same.
 
-The type object's job is to contain the "static" methods that are relevant to the type itself but not any particular instance of it. Constructors are the most important part of this.
+The class object's job is to contain the "static" methods that are relevant to the type itself but not any particular instance of it. Constructors are the most important part of this.
 
-The convention in Jay is that the type object is named using a singular PascalCased noun, and the prototype is plural.
-
-```jay
-Point <- [
-  new-x: x y: y { [|Points| _x <- x, _y <- y ] }
-]
-
-Points <- [
-  x { _x }
-  y { _y }
-  + other { Point new-x: _x + other x y: _y + other y }
-  toString { "(" + _x + ", " + _y + ")" }
-]
-```
-
-Here we're defining a two-dimensional point type. The Point object represents the type itself. It's one contribution is to define a constructor method that creates a new point instance. That method just returns an object literal with some state initialized and its parent correctly wired up to Points.
-
-Points, in turn, is the prototype. It has the methods that all points support. Here it's just accessors for the coordinates, a little + operator so you can do vector math, and a to-string method so it can display itself. We can use these like so:
-
-```jay
-a <- Point new-x: 2 y: 3
-b <- Point new-x: 1 y: 4
-write-line: a + b // (3, 7)
-```
-
-So, without adding any complexity to the language, we can define class-like things where that pattern makes sense. But, if all you need as an object, you don't have to deal with that baggage.
-
-> I think we may be able to add something on Ether to make this a bit nicer, e.g.:
+Jay defines a `class:` method on `Ether` that you can use to create a new class object:
 
 ```jay
 Point <- class: [
   x { _x }
   y { _y }
-
-] static: [
-  new-x: x y: y { |Point new| _x <- x, _y <- y }
+  + other { 
+    Point new :: (
+      _x <- _x + other x
+      _y <- _y + other y
+    )
+  }
 ]
 ```
+
+The object you pass to this method is the instance prototype, and the return value is the class object. By default, it inherits from `Class`, which provides a default constructor `new` as well as a reference to the instance prototype `proto`. If you want to modify an existing class object (by adding static methods) you can bind to the class object, and if you want to modify the instance prototype for a class, you can bind to its `proto`:
+
+```jay
+Point :: (
+  newX: x Y: y { 
+    Point new :: (
+      _x <- x
+      _y <- y
+    )
+  }
+)
+
+Point proto :: (
+  to-string { "(" + _x + ", " + _y + ")" }
+)
+```
+
+Before, we created a two-dimensional point class, and here we're adding `newX:Y:` as a convenience constructor on the class object. We're also adding a `to-string` method on the instance prototype. 
+
+You can also provide your own object to act as the instance "factory", which we refer to as the superclass, by calling `class:superclass:` and passing it as the second parameter. The built in implementation of `class:` simply calls this method with `Class` as the superclass.
+
+It's worth noting that this is a very thin convenience layer, there's nothing special going on. If the instance prototype provided has a parent, that parent will remain the parent of any instances you create. Without adding any complexity to the language, we can define class-like things where that pattern makes sense. But, if all you need as an object, you don't have to use this at all.
+
+> Some of these names may be a bit confusing. There's some familiarity in them, but they may be different enough that it ends up not being worth using the same name.

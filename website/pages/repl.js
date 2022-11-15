@@ -26,7 +26,7 @@ dragon <- [
 dragon trace: 5`,
 
 fib: `// add a fib method to Numbers
-Numbers :: fib {
+Number proto :: fib {
   if: self = 0 then: { return 0 }
   if: self = 1 then: { return 1 }
   (self - 2) fib + (self - 1) fib

@@ -2,41 +2,13 @@
 
   const BRIDGE = true
   globalThis.$FixBridgedTypes = function(toAssign) {
-    for (let t of [$Numbers, $Strings, $Arrays, $Blocks]) {
+    for (let t of [$Number, $String, $Array, $Block]) {
       for (let k of Object.keys(toAssign)) {
-        if (!t.hasOwnProperty(k)) {
-          t[k] = toAssign[k]
+        if (!t._proto.hasOwnProperty(k)) {
+          t._proto[k] = toAssign[k]
         }
       }
     }
-  }
-
-  globalThis.ReturnExpr = function(result, id) {
-    this.result = result
-    this.id = id
-    //this.toString = () => "RuntimeException: cannot call return from outside of a method"
-  }
-
-  globalThis.ReturnExpr.prototype = new Error
-
-  globalThis.$Object = {}
-  globalThis.$Ether = Object.create($Object)
-
-  globalThis.True = Object.create($Object)
-  globalThis.False = Object.create($Object)
-  globalThis.Nil = Object.create($Object)
-  Nil.toString = function(){ "nil" }
-
-  if (BRIDGE) {
-    globalThis.$Numbers = Number.prototype
-    globalThis.$Strings = String.prototype
-    globalThis.$Arrays = Array.prototype
-    globalThis.$Blocks = Function.prototype
-  } else {
-    globalThis.$Numbers = Object.create($Object)
-    globalThis.$Strings = Object.create($Object)
-    globalThis.$Arrays = Object.create($Object)
-    globalThis.$Blocks = Object.create($Object)
   }
 
   // this is a dumb thing...
@@ -55,6 +27,47 @@
     return x
   }
 
+  globalThis.ReturnExpr = function(result, id) {
+    this.result = result
+    this.id = id
+    //this.toString = () => "RuntimeException: cannot call return from outside of a method"
+  }
+
+  globalThis.ReturnExpr.prototype = new Error
+
+  Object.from = function(parent, properties={}) {
+    let o = Object.assign(Object.create(parent), properties)
+    o._parent = parent
+    return o
+  }
+
+  globalThis.$Object = {}
+  globalThis.True = Object.from($Object)
+  globalThis.False = Object.from($Object)
+  globalThis.Nil = Object.from($Object)
+  Nil.toString = function(){ "nil" }
+
+  globalThis.$Class =  Object.from($Object, {
+    "new": function() {
+      return Object.from(this._proto)
+    }, 
+
+    "proto": function() {
+      return this._proto
+    },
+  })
+
+  globalThis.$Ether = Object.from($Object, {
+    "class:superclass:": function(proto, superclass) {
+      return Object.from(superclass, { _proto: proto })
+    }, 
+  })
+
+  globalThis.$Number = $Ether["class:superclass:"](BRIDGE ? Number.prototype : {}, $Class)
+  globalThis.$String = $Ether["class:superclass:"](BRIDGE ? String.prototype : {}, $Class)
+  globalThis.$Array = $Ether["class:superclass:"](BRIDGE ? Array.prototype : {}, $Class)
+  globalThis.$Block = $Ether["class:superclass:"](BRIDGE ? Function.prototype : {}, $Class)
+
   Object.assign($Object, {
     "===": function(other) {
       return BOOL(this === other)
@@ -64,17 +77,17 @@
       return this.toString()
     },
 
+    // TODO: this doesn't work
     "parent": function() {
       if (this === $Object) 
         return $Object
       else
-        return this.prototype
+        return this._parent
     },
 
     "+string:": function(s) {
       return s + this["to-string"]()
     },
-
   })
 
   Object.assign($Ether, {
@@ -101,7 +114,7 @@
     }
   }
 
-  Object.assign($Blocks, BlockProto)
+  Object.assign($Block._proto, BlockProto)
 
   let NumberProto = {
     "abs": function() {
@@ -153,9 +166,9 @@
     }
   }
 
-  Object.assign($Numbers, NumberProto)
+  Object.assign($Number._proto, NumberProto)
 
-  Object.assign($Arrays, {
+  Object.assign($Array._proto, {
     "count": function() {
       return VALUE(this).length
     },
@@ -177,7 +190,7 @@
     }
   })
   
-  Object.assign($Strings, {
+  Object.assign($String._proto, {
     "count": function() {
       return VALUE(this).length
     },
@@ -226,9 +239,7 @@
     yield fiber(value)
   }
 
-  globalThis.$Fibers = Object.create($Object)
-
-  Object.assign($Fibers, {
+  globalThis.$Fibers = Object.from($Object, {
     "new-fiber": function(fn) {
       return function *() {
         fn()

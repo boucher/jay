@@ -294,13 +294,13 @@ Expr.Number.prototype.compileTo = function(compiler) {
 Expr.Object.prototype.compileTo = function(compiler) {
   compiler.indent()
 
+  compiler.write("Object.from(")
   if (this.parent) {
-    compiler.write("Object.assign(Object.create(")
     this.parent.compileTo(compiler)
-    compiler.writeLine("), {")
   } else {
-    compiler.writeLine("({")
+    compiler.writeLine("$Object")
   }
+  compiler.writeLine(", {")
 
   this.defines.forEach((d, i) => {
     d.compileTo(compiler)
