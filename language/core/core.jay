@@ -32,8 +32,18 @@ Object :: (
   call: a : b : c : d : e : f : g : h { self }
   call: a : b : c : d : e : f : g : h : i { self }
   call: a : b : c : d : e : f : g : h : i : j { self }
+  apply: arguments { self } 
 
   yourself { self }
+
+  isa: class {
+    (self parent) = (class proto)
+  }
+
+  // TODO: error?
+  forward: message : arguments {
+    nil
+  }
 )
 
 true :: (
@@ -157,6 +167,10 @@ Number proto :: (
   > right { right >number: self }
   <= right { right <=number: self }
   >= right { right <=number: self }
+
+  isa: class {
+    class = Number
+  }
 )
 
 Object :: (
@@ -181,6 +195,8 @@ String proto :: (
 
   from: from { self from: from count: self count - from }
   from: from to: to { self from: from count: to - from }
+
+  isa: class { class = String }
 )
 
 Array :: (
@@ -228,6 +244,8 @@ Array proto :: (
     self each: {|element| result add: (block call: element) }
     result
   }
+
+  isa: class { class = Array }
 )
 
 // Truthiness: only two things are true: the true object, and blocks that
@@ -235,7 +253,10 @@ Array proto :: (
 Object :: true? { false }
 true :: true? { true }
 
-Block proto :: true? { self call true? }
+Block proto :: (
+  true? { self call true? }
+  isa: class { class = Block }
+)
 
 // Short-circuiting logical operators
 Object :: (
