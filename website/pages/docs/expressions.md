@@ -304,7 +304,7 @@ This creates a variable `a`, assigns "hi" to it, then prints "hi".
 
 ### Short and Long Assignment
 
-There are actually two kinds of assignment in Jay: short and long. The `{"<-"}` operator is short assignment and is what you'll use most of the time. It assigns to a variable in the current scope. If you want to avoid creating a new variable in the current scope and instead assign to an existing variable defined in an outer scope, you use the long assignment arrow: `<--`}`.
+There are actually two kinds of assignment in Jay: short and long. The `<-` operator is short assignment and is what you'll use most of the time. It assigns to a variable in the current scope. If you want to avoid creating a new variable in the current scope and instead assign to an existing variable defined in an outer scope, you use the long assignment arrow: `<--`.
 
 ```jay
 a <- "outside"
@@ -324,7 +324,7 @@ do: {
 write: a
 ```
 
-Now this code will print "inside". The `a {'<--'} "inside"` line now means "walk up the scope chain looking for an existing variable named a and assign to it." (If it fails to find a previously declared variable to assign to, it will throw an error.)
+Now this code will print "inside". The `a <-- "inside"` line now means "walk up the scope chain looking for an existing variable named a and assign to it." (If it fails to find a previously declared variable to assign to, it will throw an error.)
 
 One way you can think of this is that short assignment always means "declare a new variable in the current scope" and long assignment means "assign to an existing one."
 
