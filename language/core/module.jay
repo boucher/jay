@@ -1,1 +1,4 @@
-"test"
+Module <- [
+  path <- { nil }
+  default <- { nil }
+]

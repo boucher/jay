@@ -38,6 +38,8 @@ Token.Operator     = "operator"
 Token.Keyword      = "keyword"
 Token.IgnoreLine   = "ignore line"
 Token.Eof          = "eof"
+Token.Scheme       = "scheme"
+Token.StringPart   = "string part"
 Token.Error        = "error"
 
 
@@ -105,6 +107,10 @@ class Lexer {
     this.pos = 0
     this.start = 0
     this.eatNewlines = true
+    this.pending = null
+    this.interpolationDepth = 0
+    this.braceDepth = 0
+    this.interpolationStack = []
   }
 
   *each(fn) {
@@ -145,7 +151,7 @@ class Lexer {
   // Reads the next token from the source and handles newlines.
   nextToken() {
     while(true) {
-      if (this.eof()) {
+      if (this.eof() && !this.pending) {
         let span = new SourceSpan(this.file, this.pos, this.pos)
         return new Token(Token.Eof, "", span)
       }
@@ -175,7 +181,9 @@ class Lexer {
         case Token.Semicolon:
         case Token.LeftParen:
         case Token.LeftBracket:
-        case Token.LeftBrace: 
+        case Token.LeftBrace:
+        case Token.StringPart:
+        case Token.Scheme:
           this.eatNewlines = true
           break
 
@@ -189,6 +197,12 @@ class Lexer {
 
   // Reads the next token from the source. Doesn't do any newline normalization.
   nextTokenRaw() {
+    if (this.pending) {
+      let token = this.pending
+      this.pending = null
+      return token
+    }
+
     while (true) {
       this.start = this.pos
       let c = this.current()
@@ -197,8 +211,23 @@ class Lexer {
         case ")": return this.singleToken(Token.RightParen)
         case "[": return this.singleToken(Token.LeftBracket)
         case "]": return this.singleToken(Token.RightBracket)
-        case "{": return this.singleToken(Token.LeftBrace)
-        case "}": return this.singleToken(Token.RightBrace)
+        case "{":
+          if (this.interpolationDepth > 0) {
+            this.braceDepth++
+          }
+          return this.singleToken(Token.LeftBrace)
+        case "}":
+          if (this.interpolationDepth > 0 && this.braceDepth == 0) {
+            this.interpolationDepth--
+            let mode = this.interpolationStack.pop()
+            this.advance()
+            this.start = this.pos
+            return mode == "path" ? this.readPathContent() : this.readStringContent()
+          }
+          if (this.interpolationDepth > 0) {
+            this.braceDepth--
+          }
+          return this.singleToken(Token.RightBrace)
         case ",": return this.singleToken(Token.Comma)
         case "\n": return this.singleToken(Token.Comma)
         case "\\": return this.singleToken(Token.IgnoreLine)
@@ -290,12 +319,51 @@ class Lexer {
     this.advanceWhile(c => c.identifier())
 
     let type = Token.Name
+    if (this.current() == ":" && this.next() == "/" && this.source[this.pos + 2] == "/") {
+      return this.readScheme()
+    }
+
     if (this.current() == ":") {
       this.advance()
       type = Token.Keyword
     }
 
     return this.makeToken(type)
+  }
+
+  readScheme() {
+    // Emit Token.Scheme with just the scheme name (already consumed by readName)
+    let schemeToken = this.makeToken(Token.Scheme)
+
+    this.advance() // :
+    this.advance() // /
+    this.advance() // /
+    this.start = this.pos
+
+    // Queue the path content token; return the scheme token first
+    this.pending = this.readPathContent()
+    return schemeToken
+  }
+
+  readPathContent() {
+    let text = ""
+    while (!this.eof()) {
+      let c = this.current()
+      if (c == "{") {
+        this.advance()
+        this.interpolationDepth++
+        this.interpolationStack.push("path")
+        return this.makeToken(Token.StringPart, text)
+      }
+      if (c == ":" && this.next() == ":") break  // stop before ::
+      if (c.alpha() || c.digit() || "-._~/.@?&=:%".includes(c)) {
+        text += c
+        this.advance()
+      } else {
+        break  // whitespace, delimiters, etc. end the path
+      }
+    }
+    return this.makeToken(Token.String, text)
   }
 
   readOperator() {
@@ -317,8 +385,12 @@ class Lexer {
   }
 
   readString() {
-    this.advance()
+    this.advance() // opening "
+    this.start = this.pos
+    return this.readStringContent()
+  }
 
+  readStringContent() {
     let text = ""
     while (true) {
       if (this.eof()) return this.makeToken(Token.Error, "Unterminated string")
@@ -328,21 +400,32 @@ class Lexer {
         return this.makeToken(Token.String, text)
       }
 
+      if (this.current() == "{") {
+        this.advance()
+        this.interpolationDepth++
+        this.interpolationStack.push("string")
+        return this.makeToken(Token.StringPart, text)
+      }
+
       if (this.current() == "\\") {
         this.advance()
 
         if (this.eof()) return this.makeToken(Token.Error, "Unterminated string escape")
-        
+
         let c = this.advance()
         switch (c) {
-          case "n": 
+          case "n":
             text += "\n"; break
-          case "\"": 
+          case "\"":
             text += "\""; break
-          case "\\": 
+          case "\\":
             text += "\\"; break
-          case "t": 
+          case "t":
             text += "\t"; break
+          case "{":
+            text += "{"; break
+          case "}":
+            text += "}"; break
           default:
             return this.makeToken(Token.Error, `Unrecognized string escape: '${c}'`)
         }
@@ -364,7 +447,7 @@ class Lexer {
   }
 
   makeToken(type, text) {
-    if (!text) {
+    if (text == null) {
       text = this.source.substring(this.start, this.pos)
 
       switch (text) {

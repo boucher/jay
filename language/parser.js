@@ -121,50 +121,61 @@ class Parser {
   }
 
   assignment() {
-    let [name, arrow] = this.match2(Token.Name, Token.Arrow)
-    if (name && arrow) {
-      let value = this.assignment()
-      return new Expr.Var(name.text, value)
+    let expr = this.cascade()
+
+    let arrow
+    if (arrow = this.match(Token.Arrow)) {
+      if (expr instanceof Expr.Scheme) {
+        return new Expr.SchemeCreate(expr.scheme, expr.path, this.assignment())
+      }
+      if (expr instanceof Expr.Name) {
+        return new Expr.Var(expr.name, this.assignment())
+      }
+      this.throwError("Invalid target for <-", arrow)
     }
 
-    [name, arrow] = this.match2(Token.Name, Token.LongArrow)
-    if (name && arrow) {
-      let value = this.assignment()
-      return new Expr.Set(name.text, value)
+    if (arrow = this.match(Token.LongArrow)) {
+      if (expr instanceof Expr.Scheme) {
+        return new Expr.SchemeUpdate(expr.scheme, expr.path, this.assignment())
+      }
+      if (expr instanceof Expr.Name) {
+        return new Expr.Set(expr.name, this.assignment())
+      }
+      this.throwError("Invalid target for <--", arrow)
     }
 
-    return this.cascade()
+    return expr
   }
 
   cascade() {
     let expr = this.keyword()
 
     if (expr instanceof Expr.Message) {
-      let messages = [expr]
-      let args = []
+      let messages = [{name: expr.name, args: expr.args}]
 
       this.whileMatchDo(Token.Semicolon, () => {
         let token
+        let args = []
         if (token = this.match(Token.Name)) {
-          messages.push(new Expr.Message(expr.receiver, token.text, args))
+          messages.push({name: token.text, args: args})
         } else if (token = this.match(Token.Operator)) {
           args.push(this.unary())
-          messages.push(new Expr.Message(expr.receiver, token.text, args))
+          messages.push({name: token.text, args: args})
         } else if (this.ifLookAhead(Token.Keyword)) {
           let name = ""
           this.whileMatchDo(Token.Keyword, keyword => {
             name += keyword.text
             args.push(this.operator())
           })
-          messages.push(new Expr.Message(expr.receiver, name, args))
+          messages.push({name: name, args: args})
         }
       })
 
       if (messages.length == 1) {
-        expr = messages[0]
+        expr = expr
       } else {
-        expr = new Expr.Sequence(messages)
-      }        
+        expr = new Expr.Cascade(expr.receiver, messages)
+      }
     }
 
     return expr
@@ -216,6 +227,15 @@ class Parser {
 
     if (token = this.match(Token.String)) {
       return new Expr.String(token.text)
+    }
+
+    if (token = this.match(Token.StringPart)) {
+      return this.parseInterpolatedString(token.text)
+    }
+
+    if (token = this.match(Token.Scheme)) {
+      let pathExpr = this.parseSchemePath()
+      return new Expr.Scheme(token.text, pathExpr)
     }
 
     if (token = this.match(Token.Name)) {
@@ -376,6 +396,51 @@ class Parser {
     }
 
     this.throwError(`Unexpected token '${this.current()}' after bind.`, this.current())
+  }
+
+  parseInterpolatedString(firstText) {
+    let parts = []
+    if (firstText.length > 0) parts.push(new Expr.String(firstText))
+    parts = parts.concat(this.parseInterpolationParts())
+    return this.buildConcatenation(parts)
+  }
+
+  parseSchemePath() {
+    let token
+    if (token = this.match(Token.StringPart)) {
+      let parts = []
+      if (token.text.length > 0) parts.push(new Expr.String(token.text))
+      parts = parts.concat(this.parseInterpolationParts())
+      return this.buildConcatenation(parts)
+    }
+
+    token = this.consume(Token.String, "Expect path after scheme.")
+    return new Expr.String(token.text)
+  }
+
+  parseInterpolationParts() {
+    let parts = []
+    parts.push(new Expr.Message(this.expression(), "to-string", []))
+
+    let token
+    while (token = this.match(Token.StringPart)) {
+      if (token.text.length > 0) parts.push(new Expr.String(token.text))
+      parts.push(new Expr.Message(this.expression(), "to-string", []))
+    }
+
+    token = this.consume(Token.String, "Expect end of interpolation.")
+    if (token.text.length > 0) parts.push(new Expr.String(token.text))
+
+    return parts
+  }
+
+  buildConcatenation(parts) {
+    if (parts.length == 0) return new Expr.String("")
+    let result = parts[0]
+    for (let i = 1; i < parts.length; i++) {
+      result = new Expr.Message(result, "+", [parts[i]])
+    }
+    return result
   }
 
   parseDefineMethod(params) {

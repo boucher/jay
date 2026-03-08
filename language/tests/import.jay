@@ -1,0 +1,3 @@
+Person <- await module import: "person.jay"
+sam <- Person new :: ( _name <- "Sam" )
+write: sam greet

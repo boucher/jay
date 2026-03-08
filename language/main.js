@@ -1,6 +1,8 @@
 'use strict' 
-import { readFileSync } from "node:fs"
+import { readFileSync, writeFileSync, existsSync } from "node:fs"
+import path from "node:path"
 import readline from "node:readline"
+import * as url from 'url';
 //import { SaferEval } from "safer-eval"
 
 import Parser from "./parser.js"
@@ -22,22 +24,95 @@ class Finch {
     }
   }
 
-  static runFile(path) {
-    let result = this.compile(path, readFileSync(path).toString('utf-8'));
+  static setupEnvironment() {
+    const runtimeCode = readFileSync(new URL('./runtime.js', import.meta.url), "utf-8");
+    const coreCode = this.compile("./core/core.jay", readFileSync(new URL('./core/core.jay', import.meta.url)).toString('utf-8'));
+
+    // __dirname is not available in ES modules, so provide it for the compiled code
+    globalThis.__dirname = url.fileURLToPath(new URL('.', import.meta.url))
+
+    globalThis.$compile = (source, path) => this.compile(path, source)
+
+    globalThis.$Runtime = {
+      readFile: function(filePath) {
+        try { return readFileSync(filePath, 'utf-8') }
+        catch(e) { return null }
+      },
+      writeFile: function(filePath, content) {
+        writeFileSync(filePath, content, 'utf-8')
+      },
+      fileExists: function(filePath) {
+        return existsSync(filePath)
+      }
+    }
+
+    eval?.(runtimeCode)
+    eval?.(coreCode)
+
+    globalThis.$Schemes["file"] = {
+      read: function(filePath) {
+        let content = $Runtime.readFile(filePath)
+        return content != null ? content : Nil
+      },
+      create: function(filePath, value) {
+        $Runtime.writeFile(filePath, value["to-string"]())
+        return value
+      },
+      update: function(filePath, value) {
+        if (!$Runtime.fileExists(filePath)) return Nil
+        $Runtime.writeFile(filePath, value["to-string"]())
+        return value
+      }
+    }
+
+    globalThis.$Schemes["http"] = globalThis.$Schemes["https"] = {
+      read: async function(urlPath) {
+        try {
+          let response = await fetch("https://" + urlPath)
+          if (!response.ok) return Nil
+          return await response.text()
+        } catch(e) { return Nil }
+      },
+      create: async function(urlPath, value) {
+        try {
+          let response = await fetch("https://" + urlPath, {
+            method: "POST",
+            body: value["to-string"]()
+          })
+          if (!response.ok) return Nil
+          return await response.text()
+        } catch(e) { return Nil }
+      },
+      update: async function(urlPath, value) {
+        try {
+          let response = await fetch("https://" + urlPath, {
+            method: "PUT",
+            body: value["to-string"]()
+          })
+          if (!response.ok) return Nil
+          return await response.text()
+        } catch(e) { return Nil }
+      }
+    }
+  }
+
+
+  static async runFile(filePath) {
+    this.setupEnvironment();
+
+    globalThis.__dirname = path.resolve(path.dirname(filePath))
+
+    let code = this.compile(filePath, readFileSync(filePath).toString('utf-8'));
+    console.log(code, "--------------------");
+
+    let result = await eval?.(code);
     console.log(result);
+
     process.exit(0)
   }
 
   static runPrompt() {
-    //this.interpreter = new SaferEval({});
-
-    const runtimeCode = readFileSync("./runtime.js", "utf-8");
-    const coreCode = this.compile("./core/core.jay", readFileSync("./core/core.jay").toString('utf-8'));
-    
-    //this.interpreter.runInContext(runtimeCode)
-    //this.interpreter.runInContext(coreCode)
-    eval?.(runtimeCode)
-    eval?.(coreCode)
+    this.setupEnvironment();
 
     const rl = readline.createInterface({
       input: process.stdin,

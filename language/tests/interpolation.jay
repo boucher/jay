@@ -1,0 +1,31 @@
+name <- "world"
+write: "hello {name}"
+
+a <- 3
+b <- 4
+write: "{a} + {b} = {a + b}"
+
+write: "escape: \{not interpolated\}"
+
+write: "block: { {|x| x + 1} call: 5 }"
+
+write: "{name} count is {name count}"
+
+write: "no interpolation"
+
+// Scheme path interpolation (read)
+env://JAY_TEST <- "hello"
+key <- "JAY_TEST"
+write: env://{key}
+
+// Scheme path interpolation (write)
+key2 <- "JAY_TEST2"
+env://{key2} <- "dynamic write"
+write: env://JAY_TEST2
+
+// Static schemes still work
+write: env://HOME
+
+// Existing scheme test still passes
+env://JAY_TEST <-- "updated"
+write: env://JAY_TEST

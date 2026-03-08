@@ -1,0 +1,9 @@
+// Person Module
+
+Person <- class: [
+  name <- ""
+  greet { "Hello, " + _name }
+]
+
+//module exports :: Person { Person }
+module :: ( exports <- Person )

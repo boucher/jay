@@ -163,8 +163,42 @@ Expr.Object.prototype.printTo = function(printer) {
   printer.write("]")
 }
 
+Expr.Scheme.prototype.printTo = function(printer) {
+  printer.write(this.scheme + "://")
+  this.path.printTo(printer)
+}
+
+Expr.SchemeCreate.prototype.printTo = function(printer) {
+  printer.write(this.scheme + "://")
+  this.path.printTo(printer)
+  printer.write(" <- ")
+  this.value.printTo(printer)
+}
+
+Expr.SchemeUpdate.prototype.printTo = function(printer) {
+  printer.write(this.scheme + "://")
+  this.path.printTo(printer)
+  printer.write(" <-- ")
+  this.value.printTo(printer)
+}
+
 Expr.Self.prototype.printTo = function(printer) {
   printer.write("self")
+}
+
+Expr.Cascade.prototype.printTo = function(printer) {
+  this.receiver.printTo(printer)
+  this.messages.forEach((msg, i) => {
+    if (i !== 0) printer.write(" ; ")
+    printer.write(" " + msg.name)
+    if (msg.args.length) {
+      printer.write(" ")
+      msg.args.forEach((arg, j) => {
+        if (j !== 0) printer.write(" ")
+        arg.printTo(printer)
+      })
+    }
+  })
 }
 
 Expr.Sequence.prototype.printTo = function(printer) {

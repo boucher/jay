@@ -166,7 +166,7 @@ Number proto :: (
   < right { right <number: self }
   > right { right >number: self }
   <= right { right <=number: self }
-  >= right { right <=number: self }
+  >= right { right >=number: self }
 
   isa: class {
     class = Number
@@ -277,13 +277,12 @@ Object :: (
   }
 )
 
-// switch/case construct. usage looks like:
-// c switch \
-//     case: "{" do: { "foo" };
-//     case: "}" do: { "blah" };
-//     default: { "argh" }
+// switch/case construct. usage:
+//   result <- value switch \
+//     case: "a" do: { "got a" } ; \
+//     case: "b" do: { "got b" } ; \
+//     default: { "other" }
 Object :: switch {
-  // ### bob: having to do this is lame. :(
   outer-self <- self
   [|Switches|
     _value  <- outer-self
@@ -294,11 +293,7 @@ Object :: switch {
 
 Switches <- [
   case: case do: block {
-    // If this switch has already matched a case, just do nothing.
     if: _done? not then: {
-      // If the case is a block, then it's a predicate so evaluate
-      // it, otherwise it's a value, so compare it to the value being
-      // switched.
       matched <- if: case block? then: {
         case call: _value
       } else: {
@@ -306,21 +301,16 @@ Switches <- [
       }
 
       if: matched then: {
-        // Execute the block.
         _result <- block call: _value
         _done? <- true
       }
     }
 
-    // Always return the result. If we haven't matched yet, this will
-    // just be nil. Once we've matched, it will be the matched value.
     _result
   }
 
   default: block {
-    // If this switch has already matched a case, just do nothing.
     if: _done? not then: {
-      // Execute the block.
       _result <- block call: _value
       _done? <- true
     }

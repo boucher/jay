@@ -5,7 +5,7 @@ sequence    → bind (“,” bind)*
 bind        → assignment ("::" define | defineGroup)*
 defineGroup → "(" define ("," define)* ")"
 
-assignment  → IDENTIFIER ("<-" | "<--") assignment | 
+assignment  → cascade ("<-" | "<--") assignment |
               cascade
 
 cascade     → keyword (";" messageSend)*
@@ -15,7 +15,7 @@ keyword     → operator (KEYWORD operator)*
 operator    → unary (OPERATOR unary)*
 unary       → primary IDENTIFIER*
 
-primary     → NUMBER | STRING | IDENTIFIER | 
+primary     → NUMBER | STRING | SCHEME | IDENTIFIER |
               "return" assignment? | 
               "(" expression ")" |
               "[" object "]" |
@@ -37,4 +37,10 @@ methodDef   → "{" expression "}"
 
 KEYWORD     → IDENTIFIER? ":"
 IDENTIFIER  → [_a-zA-Z][_a-zA-Z0-9]*
-OPERATOR    → ! | + | - | * | / | &&? | \|\|? | % | ~ | 
+SCHEME      → IDENTIFIER "://" SCHEMEPATH
+SCHEMEPATH  → (PATHCHAR | "{" expression "}")*
+PATHCHAR    → [a-zA-Z0-9\-._~/.@?&=%:] (not "::")
+STRING      → '"' STRCHAR* '"'
+STRCHAR     → <any char except " { \> | "\" ESCAPE | "{" expression "}"
+ESCAPE      → n | '"' | "\\" | t | "{" | "}"
+OPERATOR    → ! | + | - | * | / | &&? | \|\|? | % | ~ |

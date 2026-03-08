@@ -1,0 +1,19 @@
+// Read env var
+home <- env://HOME
+write: home
+
+// Create and read back
+env://JAY_TEST <- "hello from jay"
+write: env://JAY_TEST
+
+// Update existing
+env://JAY_TEST <-- "updated"
+write: env://JAY_TEST
+
+// Update non-existent (returns nil)
+result <- env://DOES_NOT_EXIST <-- "fail"
+write: result
+
+// File I/O
+file:///tmp/jay-test.txt <- "Hello, schemes!"
+write: file:///tmp/jay-test.txt

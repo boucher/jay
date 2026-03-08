@@ -50,13 +50,13 @@ class Compiler {
     let compiler =new Compiler()
 
     if (!inline) {
-      compiler.write("(async function(){")
+      compiler.write("(async function($module){")
       compiler.indent()
       compiler.writeLine()
       wrapReturn(expression, compiler)
       compiler.dedent()
       compiler.writeLine("")
-      compiler.writeLine("})()")
+      compiler.writeLine("})(Object.assign($Module.new(), { $dirname: __dirname }))")
     } else {
       expression.compileTo(compiler)
     }
@@ -248,12 +248,15 @@ Expr.Error.prototype.compileTo = function(compiler) {
 Define.prototype.compileTo = function(compiler) {
   if (!this.isMethod) {
     // we are defining a field and an accessor at the same time (a property)
-    if (this.name.charAt(0) != "_") {
-      compiler.write(`"${this.name}": function(){ return this._${convertName(this.name)} },`)
+    let name = this.name
+    if (name.charAt(0) != "_") {
+      compiler.write(`"${name}": function(){ return this.${convertName(name)} },`)
       compiler.writeLine("")
+    } else {
+      name = name.substring(1)
     }
     
-    compiler.write(`"${convertName(this.name.substring(1))}": `)
+    compiler.write(`"${convertName(name)}": `)
     this.body.compileTo(compiler, false)
   } else {
     compiler.write(`"${this.name}": `)
@@ -312,8 +315,49 @@ Expr.Object.prototype.compileTo = function(compiler) {
   compiler.write("})")
 }
 
+Expr.Scheme.prototype.compileTo = function(compiler) {
+  compiler.write(`$Schemes[${JSON.stringify(this.scheme)}].read(`)
+  this.path.compileTo(compiler)
+  compiler.write(`)`)
+}
+
+Expr.SchemeCreate.prototype.compileTo = function(compiler) {
+  compiler.write(`$Schemes[${JSON.stringify(this.scheme)}].create(`)
+  this.path.compileTo(compiler)
+  compiler.write(`, `)
+  this.value.compileTo(compiler)
+  compiler.write(`)`)
+}
+
+Expr.SchemeUpdate.prototype.compileTo = function(compiler) {
+  compiler.write(`$Schemes[${JSON.stringify(this.scheme)}].update(`)
+  this.path.compileTo(compiler)
+  compiler.write(`, `)
+  this.value.compileTo(compiler)
+  compiler.write(`)`)
+}
+
 Expr.Self.prototype.compileTo = function(compiler) {
   compiler.write("this")
+}
+
+Expr.Cascade.prototype.compileTo = function(compiler) {
+  compiler.write("(($r) => {")
+  this.messages.forEach((msg, i) => {
+    if (i < this.messages.length - 1) {
+      compiler.write(`($r)["${msg.name}"](`)
+    } else {
+      compiler.write(`return ($r)["${msg.name}"](`)
+    }
+    msg.args.forEach((arg, j) => {
+      if (j !== 0) compiler.write(", ")
+      arg.compileTo(compiler)
+    })
+    compiler.write(");")
+  })
+  compiler.write("})(")
+  this.receiver.compileTo(compiler)
+  compiler.write(")")
 }
 
 Expr.Sequence.prototype.compileTo = function(compiler) {

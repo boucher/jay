@@ -1,0 +1,40 @@
+cache <- [
+  _keys <- #[]
+  _vals <- #[]
+
+  read: key {
+    from: 0 to: _keys count - 1 do: {|i|
+      if: (_keys at: i) = key then: { return _vals at: i }
+    }
+    nil
+  }
+
+  create: key value: value {
+    _keys add: key
+    _vals add: value
+    value
+  }
+
+  update: key value: value {
+    from: 0 to: _keys count - 1 do: {|i|
+      if: (_keys at: i) = key then: {
+        _vals at: i put: value
+        return value
+      }
+    }
+    nil
+  }
+]
+
+register-scheme: "memo" handler: cache
+
+memo://greeting <- "hello"
+memo://name <- "world"
+write: memo://greeting
+write: memo://name
+
+memo://greeting <-- "hi"
+write: memo://greeting
+
+key <- "name"
+write: memo://{key}

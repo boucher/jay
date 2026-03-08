@@ -11,20 +11,8 @@
     }
   }
 
-  // this is a dumb thing...
-  const VALUE = function(v) { 
-    return typeof v.value === "undefined" ? v : v.value 
-  }
-   
   const BOOL = function(b) {
     return b ? True : False
-  }
-
-  // if we want to box values we can wrap them here...
-  // NOTHING is using this right now...
-  let BOX = function(klass, x) {
-    // return { value: x }
-    return x
   }
 
   globalThis.ReturnExpr = function(result, id) {
@@ -41,7 +29,28 @@
     return o
   }
 
-  globalThis.$Object = {}
+  /*
+  let proxyHandler = {
+    get(target, prop, receiver) {
+      const value = Reflect.get(...arguments);
+      return typeof value === "undefined" ? 
+          createProxy(prop, receiver) :
+          value
+    }
+  }
+
+  function createProxy(msg, receiver) {
+    return function(...args) {
+        return receiver["forward::"](msg, args)
+    }
+  }
+  
+  let RootObject = {}
+  globalThis.$Object = new Proxy(RootObject, proxyHandler);
+  */
+
+  globalThis.$Object = {};
+
   globalThis.True = Object.from($Object)
   globalThis.False = Object.from($Object)
   globalThis.Nil = Object.from($Object)
@@ -68,9 +77,50 @@
   globalThis.$Array = $Ether["class:superclass:"](BRIDGE ? Array.prototype : {}, $Class)
   globalThis.$Block = $Ether["class:superclass:"](BRIDGE ? Function.prototype : {}, $Class)
 
+  globalThis.$Module = $Ether["class:superclass:"](Object.from($Object, {
+    exports: function() { return this.$exports },
+    $exports: {},
+
+    "import:": async function(path) {
+      let resolved = this.$dirname + "/" + path
+      let source = $Runtime.readFile(resolved)
+      if (source == null) return Nil
+      let mod = await eval?.($compile(source, path))
+      return mod.$exports || Nil
+    }
+  }), $Class)
+
+
+  globalThis.$Schemes = {
+    "env": {
+      read: function(path) {
+        if (typeof process !== 'undefined') {
+          let val = process.env[path]
+          return val !== undefined ? val : Nil
+        }
+        return Nil
+      },
+      create: function(path, value) {
+        if (typeof process !== 'undefined') {
+          process.env[path] = value["to-string"]()
+        }
+        return value
+      },
+      update: function(path, value) {
+        if (typeof process !== 'undefined') {
+          if (process.env[path] === undefined) return Nil
+          process.env[path] = value["to-string"]()
+        }
+        return value
+      }
+    }
+  }
+
   Object.assign($Object, {
     "===": function(other) {
-      return BOOL(this === other)
+      let a = typeof this === 'object' ? this.valueOf() : this
+      let b = typeof other === 'object' ? other.valueOf() : other
+      return BOOL(a === b)
     },
 
     "to-string": function() {
@@ -100,17 +150,35 @@
       console.log(text["to-string"]()+"\n")
     },
 
+    "print:": function(text) {
+      this["write-line"](text)
+    },
+
     "sleep:": async function(milliseconds) {
       return new Promise((resolve, reject) => {
         setTimeout(resolve, milliseconds)
       })
-    }
+    },
+
+    "register-scheme:handler:": function(name, handler) {
+      $Schemes[name["to-string"]()] = {
+        read: function(path) { return handler["read:"](path) },
+        create: function(path, value) { return handler["create:value:"](path, value) },
+        update: function(path, value) { return handler["update:value:"](path, value) }
+      }
+    },
   })
 
-  const BlockProto = {};
+  const BlockProto = {
+    "apply:": function(args) {
+      return this.apply(this, args)
+    }
+  };
+
+  // TODO it would probably be much more performant to not go through apply
   for (let i = 1; i <= 10; i++) {
-    BlockProto["call"+":".repeat(i)] = function() {
-      VALUE(this).apply(VALUE(this), arguments)
+    BlockProto["call"+":".repeat(i)] = function(...args) {
+      return this.apply(this, args)
     }
   }
 
@@ -118,51 +186,51 @@
 
   let NumberProto = {
     "abs": function() {
-      return Math.abs(VALUE(this))
+      return Math.abs(this)
     },
 
     "neg": function() {
-      return -VALUE(this)
+      return -this
     },
 
     "mod:": function(i) {
-      return VALUE(this) % VALUE(i)
+      return this % i
     },
     "+number:": function(x) {
-      return VALUE(x) + VALUE(this)
+      return x + this
     },
     "-number:": function(x) {
-      return VALUE(x) - VALUE(this)
+      return x - this
     },
     "*number:": function(x) {
-      return VALUE(x) * VALUE(this)
+      return x * this
     },
     "/number:": function(x) {
-      return VALUE(x) / VALUE(this)
+      return x / this
     },
     "=number:": function(x) {
-      return BOOL(VALUE(this) == VALUE(x))
+      return BOOL(+this === +x)
     },
     "!=number:": function(x) {
-      return BOOL(VALUE(this) != VALUE(x))
+      return BOOL(+this !== +x)
     },
     "<number:": function(x) {
-      return BOOL(VALUE(x) < VALUE(this))
+      return BOOL(+x < +this)
     },
     ">number:": function(x) {
-      return BOOL(VALUE(x) > VALUE(this))
+      return BOOL(+x > +this)
     },
     "<=number:": function(x) {
-      return BOOL(VALUE(x) <= VALUE(this))
+      return BOOL(+x <= +this)
     },
     ">=number:": function(x) {
-      return BOOL(VALUE(x) >= VALUE(this))
+      return BOOL(+x >= +this)
     },
   }
 
   for (let k of ["floor", "ceiling", "sqrt", "sin", "cos", "tan", "asin", "acos", "atan"]) {
     NumberProto[k] = function() {
-      return Math[k](VALUE(this))
+      return Math[k](this)
     }
   }
 
@@ -170,45 +238,45 @@
 
   Object.assign($Array._proto, {
     "count": function() {
-      return VALUE(this).length
+      return this.length
     },
 
     "add:": function(x) {
-      return VALUE(this).push(x)
+      return this.push(x)
     },
 
     "at:": function(i) {
-      return VALUE(this)[i]
+      return this[i]
     },
 
     "at:put:": function(i, x) {
-      VALUE(this)[i] = x
+      this[i] = x
     },
 
     "removeAt:": function(i) {
-      return VALUE(this).splice(i, 1)
+      return this.splice(i, 1)
     }
   })
   
   Object.assign($String._proto, {
     "count": function() {
-      return VALUE(this).length
+      return this.length
     },
 
     "at:": function(i) {
-      return VALUE(this)[i]
+      return this[i]
     },
 
     "from:count:": function(start, count) {
-      return VALUE(this).substring(start, count)
+      return this.substring(start, start + count)
     },
     
     "index-of:": function(s) {
-      return VALUE(this).indexOf(s)
+      return this.indexOf(s)
     },
 
     "=string:": function(s) {
-      return BOOL(s == this)
+      return BOOL(`${s}` === `${this}`)
     },
 
     "<": function(s) {

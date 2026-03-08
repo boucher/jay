@@ -22,24 +22,50 @@ be within a single one. Unlike C and others, block comments can nest in Jay:
 
 ## Literals
 
-Jay currently supports two atomic types: numbers and strings. Numbers are 
-double-precision floating point values, and strings are text. Jay doesn't 
-support a lot of fancy formats for them yet, just the basic:
- 
+Jay currently supports two atomic types: numbers and strings. Numbers are
+double-precision floating point values, and strings are text.
+
 ```jay
 0
 1234
 -432.1
 "a string"
 "another string"
-"supported escapes: \" \n \\"
+"supported escapes: \" \n \\ \t"
 ```
 
+### String Interpolation
 
-Jay also has a couple of special standard objects. The object `nil` is used to indicate 
-the absence of a value. `true` and `false` are boolean values that you can use with 
-things like `if:then:` and `while:do:`. Unlike numbers and strings, these aren't built 
-into the language. They are just regular objects implemented in Jay code that 
+Strings support interpolation using curly braces `{}`. Any expression inside
+the braces is evaluated, converted to a string via `to-string`, and inserted
+into the result:
+
+```jay
+name <- "world"
+write: "hello {name}"       // hello world
+
+a <- 3
+b <- 4
+write: "{a} + {b} = {a + b}"  // 3 + 4 = 7
+```
+
+You can use any expression inside the braces, including blocks and message sends:
+
+```jay
+write: "block: { {|x| x + 1} call: 5 }"  // block: 6
+write: "{name} has {name count} characters"
+```
+
+To include a literal `{` or `}` in a string, escape it with a backslash:
+
+```jay
+write: "escape: \{not interpolated\}"
+```
+
+Jay also has a couple of special standard objects. The object `nil` is used to indicate
+the absence of a value. `true` and `false` are boolean values that you can use with
+things like `if:then:` and `while:do:`. Unlike numbers and strings, these aren't built
+into the language. They are just regular objects implemented in Jay code that
 happen to do useful things.
 
 ## Variables
@@ -349,6 +375,20 @@ Jay has built-in support for resizable arrays. Most of the things you can do wit
 ```
 
 Arrays are objects like everything else, so they can be stored in variables, passed to methods, etc. They are bridged to native JS arrays.
+
+## Schemes
+
+Schemes provide a uniform syntax for reading and writing to external resources using a URI-like `name://path` notation. They use the same `<-` and `<--` arrows as variable assignment, and support path interpolation with `{}`:
+
+```jay
+write: env://HOME
+file:///tmp/hello.txt <- "Hello!"
+
+key <- "HOME"
+write: env://{key}
+```
+
+Jay ships with built-in schemes for environment variables, files, and HTTP. You can also define your own. See the [full schemes documentation](/docs/schemes) for details.
 
 ## Precedence and Associativity
 

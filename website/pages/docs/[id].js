@@ -6,7 +6,9 @@ export default function DocPage({ html }) {
 
 const docs = {
   expressions: require("./expressions.md"),
-  objects: require("./objects.md")
+  objects: require("./objects.md"),
+  schemes: require("./schemes.md"),
+  reference: require("./reference.md")
 }
 
 export async function getStaticProps({ params }) {
@@ -28,10 +30,14 @@ export async function getStaticProps({ params }) {
 
 export async function getStaticPaths() {
   return {
-    paths: [{ 
-      params: { id: 'expressions' } 
-    }, { 
-      params: { id: 'objects' } 
+    paths: [{
+      params: { id: 'expressions' }
+    }, {
+      params: { id: 'objects' }
+    }, {
+      params: { id: 'schemes' }
+    }, {
+      params: { id: 'reference' }
     }],
     fallback: false, // can also be true or 'blocking'
   };

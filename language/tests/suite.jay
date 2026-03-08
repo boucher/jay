@@ -1,0 +1,246 @@
+// Jay Comprehensive Test Suite
+// Each test prints "ok" or "FAIL: description"
+
+passed <- 0
+failed <- 0
+
+assert <- [
+  that: value equals: expected label: label {
+    if: value = expected then: {
+      passed <-- passed + 1
+    } else: {
+      failed <-- failed + 1
+      write: "FAIL: {label} (expected {expected}, got {value})"
+    }
+  }
+
+  that: value label: label {
+    self that: value equals: true label: label
+  }
+]
+
+// === Numbers ===
+assert that: 1 + 2 equals: 3 label: "addition"
+assert that: 5 - 3 equals: 2 label: "subtraction"
+assert that: 2 * 3 equals: 6 label: "multiplication"
+assert that: 10 / 2 equals: 5 label: "division"
+assert that: (7 mod: 3) equals: 1 label: "modulo"
+assert that: 3 neg equals: -3 label: "negation"
+assert that: -5 abs equals: 5 label: "abs"
+assert that: 3 floor equals: 3 label: "floor int"
+assert that: 4 sqrt equals: 2 label: "sqrt"
+
+// === Number Comparison ===
+assert that: 1 = 1 label: "number equality"
+assert that: (1 = 2) not label: "number inequality"
+assert that: 1 != 2 label: "!="
+assert that: 1 < 2 label: "<"
+assert that: 2 > 1 label: ">"
+assert that: 2 <= 2 label: "<="
+assert that: 2 >= 2 label: ">="
+assert that: 3 >= 2 label: ">= greater"
+assert that: 1 >= 2 equals: false label: ">= less"
+assert that: 1 <= 2 label: "<= less"
+assert that: 3 <= 2 equals: false label: "<= greater"
+assert that: 1 === 1 label: "=== number"
+
+// === Strings ===
+assert that: "hello" count equals: 5 label: "string count"
+assert that: ("hello" at: 0) equals: "h" label: "string at:"
+assert that: ("hello" + " world") equals: "hello world" label: "string +"
+assert that: "a" = "a" label: "string equality"
+assert that: ("a" = "b") not label: "string inequality"
+assert that: "a" === "a" label: "=== string"
+assert that: ("hello" contains: "ell") label: "contains:"
+assert that: ("hello" starts-with: "he") label: "starts-with:"
+assert that: ("hello" contains: "xyz") not label: "contains: false"
+assert that: ("hello" index-of: "ll") equals: 2 label: "index-of:"
+assert that: ("hello" from: 1 count: 3) equals: "ell" label: "from:count:"
+assert that: ("hello" from: 2) equals: "llo" label: "from:"
+assert that: ("hello" from: 1 to: 4) equals: "ell" label: "from:to:"
+
+// === String Interpolation ===
+name <- "world"
+assert that: "hello {name}" equals: "hello world" label: "interpolation basic"
+a <- 3
+b <- 4
+assert that: "{a} + {b} = {a + b}" equals: "3 + 4 = 7" label: "interpolation expr"
+assert that: "escape: \{ok\}" equals: "escape: \{ok\}" label: "interpolation escape"
+
+// === Booleans ===
+assert that: true label: "true is true"
+assert that: false not label: "false not"
+assert that: true not equals: false label: "true not"
+assert that: (true and: false) equals: false label: "and: false"
+assert that: (true and: true) label: "and: true"
+assert that: (false or: true) label: "or: true"
+assert that: (false or: false) equals: false label: "or: false"
+assert that: true true? label: "true?"
+assert that: false true? equals: false label: "false true?"
+assert that: nil = nil label: "nil = nil"
+
+// === Type Tests ===
+assert that: 1 number? label: "number?"
+assert that: "a" string? label: "string?"
+assert that: #[] array? label: "array?"
+assert that: { 1 } block? label: "block?"
+assert that: true boolean? label: "boolean?"
+assert that: false boolean? label: "false boolean?"
+assert that: (1 string?) not label: "number not string?"
+
+// === Arrays ===
+arr <- #[10, 20, 30]
+assert that: arr count equals: 3 label: "array count"
+assert that: (arr at: 0) equals: 10 label: "array at:"
+assert that: (arr at: 2) equals: 30 label: "array at: last"
+arr at: 1 put: 99
+assert that: (arr at: 1) equals: 99 label: "array at:put:"
+
+arr2 <- #[1, 2] ++ #[3, 4]
+assert that: arr2 count equals: 4 label: "array ++"
+assert that: (arr2 at: 2) equals: 3 label: "array ++ contents"
+
+mapped <- #[1, 2, 3] map: {|x| x * 10}
+assert that: mapped count equals: 3 label: "map: count"
+assert that: (mapped at: 0) equals: 10 label: "map: first"
+assert that: (mapped at: 2) equals: 30 label: "map: last"
+
+sum <- 0
+#[1, 2, 3] each: {|x| sum <-- sum + x}
+assert that: sum equals: 6 label: "each:"
+
+// === Blocks ===
+assert that: { 42 } call equals: 42 label: "block call"
+assert that: ({|x| x + 1} call: 5) equals: 6 label: "block call:"
+assert that: ({|a b| a * b} call: 3 : 4) equals: 12 label: "block call::"
+
+// === Objects ===
+point <- [
+  x <- 0
+  y <- 0
+  sum { _x + _y }
+]
+point :: (_x <- 3, _y <- 4)
+assert that: point x equals: 3 label: "object field"
+assert that: point sum equals: 7 label: "object method"
+
+// === Inheritance ===
+parent <- [ greet { "hi" } ]
+child <- [|parent| name { "child" } ]
+assert that: child greet equals: "hi" label: "inherited method"
+assert that: child name equals: "child" label: "own method"
+
+// === Classes ===
+Point <- class: [
+  x <- 0
+  y <- 0
+  + other { Point new :: (_x <- _x + other x, _y <- _y + other y) }
+]
+p1 <- Point new :: (_x <- 1, _y <- 2)
+p2 <- Point new :: (_x <- 3, _y <- 4)
+p3 <- p1 + p2
+assert that: p3 x equals: 4 label: "class + method x"
+assert that: p3 y equals: 6 label: "class + method y"
+assert that: (p1 isa: Point) label: "isa:"
+assert that: (1 isa: Number) label: "isa: Number"
+assert that: ("a" isa: String) label: "isa: String"
+
+// === Control Flow ===
+assert that: (if: true then: { "yes" } else: { "no" }) equals: "yes" label: "if:then:else: true"
+assert that: (if: false then: { "yes" } else: { "no" }) equals: "no" label: "if:then:else: false"
+
+counter <- 0
+from: 1 to: 5 do: {|i| counter <-- counter + i}
+assert that: counter equals: 15 label: "from:to:do:"
+
+counter <-- 0
+i <- 0
+while: { i < 4 } do: { counter <-- counter + 1, i <-- i + 1 }
+assert that: counter equals: 4 label: "while:do:"
+
+// === Return from Method ===
+searcher <- [
+  find: target in: list {
+    from: 0 to: list count - 1 do: {|i|
+      if: (list at: i) = target then: { return i }
+    }
+    -1
+  }
+]
+assert that: (searcher find: "c" in: #["a", "b", "c"]) equals: 2 label: "return from loop"
+assert that: (searcher find: "x" in: #["a", "b", "c"]) equals: -1 label: "return not found"
+
+// === Variable Scoping ===
+outer <- "outside"
+do: { outer <- "inside" }
+assert that: outer equals: "outside" label: "<- creates new scope"
+
+outer2 <- "outside"
+do: { outer2 <-- "inside" }
+assert that: outer2 equals: "inside" label: "<-- assigns outer"
+
+// === Cascade ===
+arr3 <- #[]
+arr3 add: 1 ; add: 2 ; add: 3
+assert that: arr3 count equals: 3 label: "cascade add:"
+assert that: (arr3 at: 0) equals: 1 label: "cascade first"
+assert that: (arr3 at: 2) equals: 3 label: "cascade last"
+
+// === Switch/Case ===
+s <- "b" switch
+s case: "a" do: { "got a" }
+s case: "b" do: { "got b" }
+assert that: (s default: { "other" }) equals: "got b" label: "switch match"
+
+s2 <- "c" switch
+s2 case: "a" do: { "got a" }
+s2 case: "b" do: { "got b" }
+assert that: (s2 default: { "other" }) equals: "other" label: "switch default"
+
+// === Schemes ===
+env://JAY_TEST_SUITE <- "hello"
+assert that: env://JAY_TEST_SUITE equals: "hello" label: "env:// create"
+env://JAY_TEST_SUITE <-- "updated"
+assert that: env://JAY_TEST_SUITE equals: "updated" label: "env:// update"
+
+key <- "JAY_TEST_SUITE"
+assert that: env://{key} equals: "updated" label: "env:// interpolation"
+
+// === Custom Scheme ===
+store <- [
+  _keys <- #[]
+  _vals <- #[]
+
+  read: key {
+    from: 0 to: _keys count - 1 do: {|i|
+      if: (_keys at: i) = key then: { return _vals at: i }
+    }
+    nil
+  }
+
+  create: key value: value {
+    _keys add: key
+    _vals add: value
+    value
+  }
+
+  update: key value: value {
+    from: 0 to: _keys count - 1 do: {|i|
+      if: (_keys at: i) = key then: {
+        _vals at: i put: value
+        return value
+      }
+    }
+    nil
+  }
+]
+
+register-scheme: "test" handler: store
+test://greeting <- "hello"
+assert that: test://greeting equals: "hello" label: "custom scheme create"
+test://greeting <-- "hi"
+assert that: test://greeting equals: "hi" label: "custom scheme update"
+
+// === Summary ===
+write: ""
+write: "{passed} passed, {failed} failed"
