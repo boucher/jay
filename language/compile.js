@@ -267,19 +267,18 @@ Define.prototype.compileTo = function(compiler) {
 }
 
 Expr.Message.prototype.compileTo = function(compiler) {
-  let id
+  compiler.write(`$send(`)
+
   if (this.receiver) {
-    compiler.write("(")
     this.receiver.compileTo(compiler)
-    compiler.write(")")
   } else {
     compiler.write("$Ether")
   }
 
-  compiler.write(`["${this.name}"](`)
+  compiler.write(`, "${this.name}"`)
 
   this.args.forEach((n, i) => {
-    if (i != 0) compiler.write(", ")
+    compiler.write(", ")
     n.compileTo(compiler)
   })
 
@@ -345,12 +344,12 @@ Expr.Cascade.prototype.compileTo = function(compiler) {
   compiler.write("(($r) => {")
   this.messages.forEach((msg, i) => {
     if (i < this.messages.length - 1) {
-      compiler.write(`($r)["${msg.name}"](`)
+      compiler.write(`$send($r, "${msg.name}"`)
     } else {
-      compiler.write(`return ($r)["${msg.name}"](`)
+      compiler.write(`return $send($r, "${msg.name}"`)
     }
     msg.args.forEach((arg, j) => {
-      if (j !== 0) compiler.write(", ")
+      compiler.write(", ")
       arg.compileTo(compiler)
     })
     compiler.write(");")

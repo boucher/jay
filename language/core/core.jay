@@ -40,8 +40,9 @@ Object :: (
     (self parent) = (class proto)
   }
 
-  // TODO: error?
-  forward: message : arguments {
+  // Called by $send when a message is not understood.
+  // Override to implement custom forwarding/delegation.
+  forward: message arguments: arguments {
     nil
   }
 )

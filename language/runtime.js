@@ -29,25 +29,14 @@
     return o
   }
 
-  /*
-  let proxyHandler = {
-    get(target, prop, receiver) {
-      const value = Reflect.get(...arguments);
-      return typeof value === "undefined" ? 
-          createProxy(prop, receiver) :
-          value
-    }
+  globalThis.$send = function(receiver, msg, ...args) {
+    let method = receiver[msg]
+    if (typeof method === 'function') return method.call(receiver, ...args)
+    if (typeof method !== 'undefined') return method
+    let forward = receiver["forward:arguments:"]
+    if (typeof forward === 'function') return forward.call(receiver, msg, args)
+    return undefined
   }
-
-  function createProxy(msg, receiver) {
-    return function(...args) {
-        return receiver["forward::"](msg, args)
-    }
-  }
-  
-  let RootObject = {}
-  globalThis.$Object = new Proxy(RootObject, proxyHandler);
-  */
 
   globalThis.$Object = {};
 
@@ -158,6 +147,15 @@
       return new Promise((resolve, reject) => {
         setTimeout(resolve, milliseconds)
       })
+    },
+
+    "send:to:arguments:": function(message, receiver, args) {
+      let method = receiver[message]
+      if (typeof method === 'function') return method.apply(receiver, args)
+      if (typeof method !== 'undefined') return method
+      let forward = receiver["forward:arguments:"]
+      if (typeof forward === 'function') return forward.call(receiver, message, args)
+      return undefined
     },
 
     "register-scheme:handler:": function(name, handler) {

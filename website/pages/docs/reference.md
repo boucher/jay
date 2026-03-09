@@ -21,6 +21,7 @@ All objects inherit from Object. These methods are available on every value.
 | `or: right` | Short-circuiting logical OR. *core* |
 | `switch` | Returns a Switches object for pattern matching. See below. *core* |
 | `call` | On a non-block, returns self. *core* |
+| `forward: message : arguments` | Called when an object receives a message it doesn't understand. Override to implement delegation, proxies, or custom dispatch. Default returns nil. *core* |
 
 ### Type Tests
 
@@ -195,6 +196,12 @@ Messages sent without a receiver go to `Ether`. These are Jay's "global function
 | Method | Description |
 |--------|-------------|
 | `sleep: ms` | Return a promise that resolves after ms milliseconds. *native* |
+
+### Message Dispatch
+
+| Method | Description |
+|--------|-------------|
+| `send: message to: receiver arguments: args` | Send a message dynamically. Useful for forwarding captured messages. *native* |
 
 ### Schemes
 

@@ -1,5 +1,6 @@
 import withShiki from '@stefanprobst/rehype-shiki'
 import toHtml from 'rehype-stringify'
+import gfm from 'remark-gfm'
 import fromMarkdown from 'remark-parse'
 import toHast from 'remark-rehype'
 import * as shiki from 'shiki'
@@ -19,6 +20,7 @@ async function createProcessor(options = {}) {
 
   const processor = unified()
     .use(fromMarkdown)
+    .use(gfm)
     .use(toHast)
     .use(withShiki, { highlighter, ...options })
     .use(toHtml)

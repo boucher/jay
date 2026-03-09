@@ -302,6 +302,90 @@ assert that: adult-names count equals: 2 label: "HOM chain count"
 assert that: (adult-names at: 0) equals: "Alice" label: "HOM chain first"
 assert that: (adult-names at: 1) equals: "Carol" label: "HOM chain second"
 
+// === Message Forwarding ===
+// Default forward returns nil for unknown messages
+obj <- [ x <- 42 ]
+assert that: (obj unknown-message) equals: nil label: "forward default nil"
+
+// Custom forwarding: log and return a value
+logger <- [
+  log <- #[]
+  forward: message arguments: arguments {
+    _log add: message
+    "forwarded"
+  }
+]
+assert that: (logger hello) equals: "forwarded" label: "forward custom unary"
+assert that: (logger greet: "world") equals: "forwarded" label: "forward custom keyword"
+assert that: logger log count equals: 2 label: "forward log count"
+assert that: (logger log at: 0) equals: "hello" label: "forward log first"
+assert that: (logger log at: 1) equals: "greet:" label: "forward log second"
+
+// Delegation pattern: forward unknown messages to another object
+inner <- [
+  greet { "hello from inner" }
+  value { 99 }
+]
+
+delegate <- [
+  _target <- inner
+  forward: message arguments: arguments {
+    send: message to: _target arguments: arguments
+  }
+]
+assert that: (delegate greet) equals: "hello from inner" label: "forward delegation greet"
+assert that: (delegate value) equals: 99 label: "forward delegation value"
+
+// === send:to:arguments: ===
+assert that: (send: "+" to: 1 arguments: #[2]) equals: 3 label: "send:to:arguments: basic"
+assert that: (send: "count" to: #[1, 2, 3] arguments: #[]) equals: 3 label: "send:to:arguments: unary"
+
+// === User-defined HOM via forwarding ===
+Array proto :: (
+  any {
+    source <- self
+    [
+      forward: message arguments: arguments {
+        source each: {|e|
+          if: (send: message to: e arguments: arguments) then: { return true }
+        }
+        false
+      }
+    ]
+  }
+
+  all {
+    source <- self
+    [
+      forward: message arguments: arguments {
+        source each: {|e|
+          if: (send: message to: e arguments: arguments) not then: { return false }
+        }
+        true
+      }
+    ]
+  }
+
+  none {
+    source <- self
+    [
+      forward: message arguments: arguments {
+        source each: {|e|
+          if: (send: message to: e arguments: arguments) then: { return false }
+        }
+        true
+      }
+    ]
+  }
+)
+
+assert that: (#[1, 2, 3, 4, 5] any > 3) label: "user HOM any true"
+assert that: (#[1, 2, 3, 4, 5] any > 10) not label: "user HOM any false"
+assert that: (#[2, 4, 6] all > 0) label: "user HOM all true"
+assert that: (#[2, 4, 6] all > 3) not label: "user HOM all false"
+assert that: (#[1, 2, 3] none > 10) label: "user HOM none true"
+assert that: (#[1, 2, 3] none > 1) not label: "user HOM none false"
+
 // === Summary ===
 write: ""
 write: "{passed} passed, {failed} failed"
