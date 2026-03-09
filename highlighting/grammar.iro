@@ -216,6 +216,21 @@ styles [] {
    textmate_scope       = keyword.control.flow.js
 }
 
+.scheme : style {
+   color                = purple
+   textmate_scope       = support.type.scheme
+}
+
+.schemePath : style {
+   color                = brown
+   textmate_scope       = string.unquoted.scheme-path
+}
+
+.interpolationPunctuation : style {
+   color                = red
+   textmate_scope       = punctuation.section.embedded
+}
+
 .illegal : style {
    color                 = white
    background_color      = red
@@ -349,7 +364,10 @@ main : context {
 
    // built-ins (e.g. Ether, Object)
    : include "builtins";
-   
+
+   // schemes (e.g. env://PATH, https://url)
+   : include "schemes";
+
    : include "strings";
    : include "boolean";
    : include "identifier";
@@ -518,7 +536,7 @@ builtins : context {
    }
 
    : pattern {
-      regex          \= (?:$${__B}(nil)$${__B})
+      regex          \= (?:$${__B}(nil|undefined)$${__B})
       styles []      = .nil;
    }
 }
@@ -532,11 +550,20 @@ strings : context {
          styles [] = .string;
       }
       : pattern {
-         regex    \= ((?:\\u[0-9a-f]{4})|(?:\\["\\/bfnrt]))
+         regex    \= ((?:\\u[0-9a-f]{4})|(?:\\[\"\\/bfnrt\{\}]))
          styles [] = .escapeChar;
       }
+      : inline_push {
+         regex    \= (\{)
+         styles [] = .interpolationPunctuation;
+         : pop {
+            regex \= (\})
+            styles [] = .interpolationPunctuation;
+         }
+         : include "main";
+      }
       : pattern {
-         regex    \= ([^\"\\]+)
+         regex    \= ([^\"\\{]+)
          styles [] = .string;
       }
    }
@@ -567,6 +594,34 @@ operator : context {
    : pattern {
       regex          \= ($${__OPERATOR})
       styles []      = .operator;
+   }
+}
+
+###########################################
+## Scheme Contexts
+###########################################
+
+schemes : context {
+   : inline_push {
+      regex       \= ([a-zA-Z][a-zA-Z0-9\+\-\.]*)(://)
+      styles []    = .scheme, .scheme;
+      : pop {
+         regex    \= (?=[\s\)\]\}\,\;])
+         styles [] = .schemePath;
+      }
+      : inline_push {
+         regex    \= (\{)
+         styles [] = .interpolationPunctuation;
+         : pop {
+            regex \= (\})
+            styles [] = .interpolationPunctuation;
+         }
+         : include "main";
+      }
+      : pattern {
+         regex    \= ([^\s\)\]\}\,\;\{]+)
+         styles [] = .schemePath;
+      }
    }
 }
 
