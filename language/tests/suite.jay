@@ -241,6 +241,67 @@ assert that: test://greeting equals: "hello" label: "custom scheme create"
 test://greeting <-- "hi"
 assert that: test://greeting equals: "hi" label: "custom scheme update"
 
+// === Block-based Collection Methods ===
+assert that: (#[1, 2, 3, 4, 5] select: {|x| x > 3}) count equals: 2 label: "select: count"
+assert that: ((#[1, 2, 3, 4, 5] select: {|x| x > 3}) at: 0) equals: 4 label: "select: first"
+assert that: (#[1, 2, 3, 4, 5] reject: {|x| x > 3}) count equals: 3 label: "reject: count"
+assert that: ((#[1, 2, 3, 4, 5] reject: {|x| x > 3}) at: 0) equals: 1 label: "reject: first"
+assert that: (#[1, 2, 3, 4, 5] reduce: 0 with: {|acc e| acc + e}) equals: 15 label: "reduce:with:"
+
+// === Higher Order Messaging ===
+nums <- #[1, 2, 3, 4, 5]
+
+// map HOM with unary messages
+negs <- nums map neg
+assert that: negs count equals: 5 label: "HOM map unary count"
+assert that: (negs at: 0) equals: -1 label: "HOM map unary first"
+assert that: (negs at: 4) equals: -5 label: "HOM map unary last"
+
+// map HOM with binary messages
+doubled <- nums map * 2
+assert that: doubled count equals: 5 label: "HOM map binary count"
+assert that: (doubled at: 0) equals: 2 label: "HOM map binary first"
+assert that: (doubled at: 4) equals: 10 label: "HOM map binary last"
+
+// select HOM with binary
+big <- nums select > 3
+assert that: big count equals: 2 label: "HOM select binary count"
+assert that: (big at: 0) equals: 4 label: "HOM select binary first"
+
+// reject HOM with binary
+small <- nums reject > 3
+assert that: small count equals: 3 label: "HOM reject binary count"
+
+// reduce HOM
+assert that: (nums reduce + 0) equals: 15 label: "HOM reduce +"
+assert that: (#[1, 2, 3, 4] reduce * 1) equals: 24 label: "HOM reduce *"
+
+// HOM with objects and unary messages
+Person <- class: [
+  name <- ""
+  age <- 0
+]
+
+people <- #[
+  Person new :: (_name <- "Alice", _age <- 25),
+  Person new :: (_name <- "Bob", _age <- 17),
+  Person new :: (_name <- "Carol", _age <- 30)
+]
+
+names <- people map name
+assert that: names count equals: 3 label: "HOM map unary msg"
+assert that: (names at: 0) equals: "Alice" label: "HOM map unary msg first"
+assert that: (names at: 2) equals: "Carol" label: "HOM map unary msg last"
+
+ages <- people map age
+assert that: (ages at: 0) equals: 25 label: "HOM map age first"
+
+// HOM chaining
+adult-names <- (people select: {|p| p age > 18}) map name
+assert that: adult-names count equals: 2 label: "HOM chain count"
+assert that: (adult-names at: 0) equals: "Alice" label: "HOM chain first"
+assert that: (adult-names at: 1) equals: "Carol" label: "HOM chain second"
+
 // === Summary ===
 write: ""
 write: "{passed} passed, {failed} failed"

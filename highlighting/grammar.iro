@@ -331,12 +331,15 @@ main : context {
       : include "main";
    }
    
-   // single bind versions of defines are valid at the top level   
+   // single bind versions of defines are valid at the top level
    : include "singleFieldDefine";
    : include "singleUnaryDefine";
    : include "singleBinaryDefine";
    : include "singleKeywordDefine";
-      
+
+   // schemes (e.g. env://PATH, https://url) — must come before messages
+   : include "schemes";
+
    // messages
    : include "messages";
    
@@ -364,9 +367,6 @@ main : context {
 
    // built-ins (e.g. Ether, Object)
    : include "builtins";
-
-   // schemes (e.g. env://PATH, https://url)
-   : include "schemes";
 
    : include "strings";
    : include "boolean";

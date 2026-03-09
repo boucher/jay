@@ -182,6 +182,9 @@
 				"include": "#singleKeywordDefine"
 			},
 			{
+				"include": "#schemes"
+			},
+			{
 				"include": "#messages"
 			},
 			{
@@ -202,9 +205,6 @@
 			},
 			{
 				"include": "#builtins"
-			},
-			{
-				"include": "#schemes"
 			},
 			{
 				"include": "#strings"

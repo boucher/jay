@@ -111,6 +111,30 @@ Arrays are resizable, ordered collections bridged to JavaScript arrays. Create t
 | `each: block` | Call block with each element. *core* |
 | `each: block between: separator` | Call block with each element, calling separator between. *core* |
 | `map: block` | Return new array with block applied to each element. *core* |
+| `select: block` | Return new array with elements for which block returns true. *core* |
+| `reject: block` | Return new array with elements for which block returns false. *core* |
+| `reduce: initial with: block` | Accumulate a value by calling block with accumulator and each element. *core* |
+
+### Higher Order Messaging (HOM)
+
+These unary methods return a proxy that captures the *next* message and applies it to each element. They work with single unary or binary messages.
+
+| Method | Description |
+|--------|-------------|
+| `map` | Transform each element: `nums map neg`, `nums map * 2` *native* |
+| `each` | Send a message to each element, return self: `items each write-line` *native* |
+| `select` | Keep elements where message returns true: `nums select > 3` *native* |
+| `reject` | Remove elements where message returns true: `nums reject > 3` *native* |
+| `reduce` | Accumulate with a binary message: `nums reduce + 0` *native* |
+
+```jay
+// HOM examples
+#[1, 2, 3] map * 10          //=> #[10, 20, 30]
+#[1, 2, 3] map neg            //=> #[-1, -2, -3]
+#[1, 2, 3, 4] select > 2      //=> #[3, 4]
+#[1, 2, 3, 4] reduce + 0      //=> 10
+people map name                //=> #["Alice", "Bob", "Carol"]
+```
 
 ### Array Creation
 

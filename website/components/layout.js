@@ -21,6 +21,7 @@ export default function RootLayout({children}) {
               <li><Link href="/">Overview</Link></li>
               <li><Link href="/docs/expressions">Expressions</Link></li>
               <li><Link href="/docs/objects">Objects</Link></li>
+              <li><Link href="/docs/reference">Reference</Link></li>
               <li><Link href="/repl">Try</Link></li>
             </ul>
           </nav>

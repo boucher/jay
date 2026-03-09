@@ -236,6 +236,31 @@
 
   Object.assign($Number._proto, NumberProto)
 
+  let homStrategies = {
+    "map": (arr, msg, args) => arr.map(e => e[msg](...args)),
+    "each": (arr, msg, args) => { arr.forEach(e => e[msg](...args)); return arr },
+    "select": (arr, msg, args) => arr.filter(e => e[msg](...args) === True),
+    "reject": (arr, msg, args) => arr.filter(e => e[msg](...args) !== True),
+    "reduce": (arr, msg, args) => {
+      let acc = args[0]
+      for (let e of arr) {
+        acc = acc[msg](e)
+      }
+      return acc
+    },
+  }
+
+  globalThis.$HOM = function(array, strategy) {
+    return new Proxy({}, {
+      get(target, prop) {
+        if (typeof prop === 'symbol') return undefined
+        return function(...args) {
+          return homStrategies[strategy](array, prop, args)
+        }
+      }
+    })
+  }
+
   Object.assign($Array._proto, {
     "count": function() {
       return this.length
@@ -255,7 +280,13 @@
 
     "removeAt:": function(i) {
       return this.splice(i, 1)
-    }
+    },
+
+    "map": function() { return $HOM(this, "map") },
+    "each": function() { return $HOM(this, "each") },
+    "select": function() { return $HOM(this, "select") },
+    "reject": function() { return $HOM(this, "reject") },
+    "reduce": function() { return $HOM(this, "reduce") },
   })
   
   Object.assign($String._proto, {

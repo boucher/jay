@@ -245,6 +245,24 @@ Array proto :: (
     result
   }
 
+  select: block {
+    result <- #[]
+    self each: {|e| if: (block call: e) then: { result add: e } }
+    result
+  }
+
+  reject: block {
+    result <- #[]
+    self each: {|e| if: (block call: e) not then: { result add: e } }
+    result
+  }
+
+  reduce: initial with: block {
+    acc <- initial
+    self each: {|e| acc <-- (block call: acc : e) }
+    acc
+  }
+
   isa: class { class = Array }
 )
 
